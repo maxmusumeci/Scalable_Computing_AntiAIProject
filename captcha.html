@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPTCHA Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+        }
+
+        .captcha-container {
+            background: white;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .instruction {
+            background: #f9f9f9;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 3px solid #2563eb;
+            color: #333;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .maze-section {
+            margin-bottom: 20px;
+        }
+
+        .maze-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .maze-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            max-height: 400px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .maze-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: none;
+            touch-action: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .stat-card {
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .message-area {
+            margin-top: 16px;
+            min-height: 24px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .message-area.success {
+            color: #16a34a;
+        }
+
+        .message-area.error {
+            color: #dc2626;
+        }
+
+        .message-area.info {
+            color: #2563eb;
+        }
+
+        .button-group {
+            margin-top: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="captcha-container">
+        <div class="header">
+            <h1>Verify you're human</h1>
+            <p class="subtitle">Complete the maze challenge to continue</p>
+        </div>
+
+        <div class="instruction">
+            Navigate the blue circle from START to END using arrow keys or WASD. Avoid the gray obstacles and spinning red danger zones. Checkpoints along the way will modify your controls.
+        </div>
+
+        <div class="maze-section">
+            <div class="maze-label">Navigation Challenge</div>
+            <div class="maze-wrapper">
+                <canvas id="mazeCanvas" class="maze-canvas"></canvas>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Progress</div>
+                <div class="stat-value" id="progressValue">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Attempts</div>
+                <div class="stat-value" id="deathCounter">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Status</div>
+                <div class="stat-value" id="statusValue">—</div>
+            </div>
+        </div>
+
+        <div class="message-area" id="status"></div>
+
+        <div class="button-group">
+            <button id="submitBtn" disabled>Verify & Continue</button>
+        </div>
+
+        <div class="footer-text" id="quirkMessage">Start the maze...</div>
+    </div>
+
+    <script src="captcha.js"></script>
+</body>
+</html>

@@ -32,12 +32,29 @@ class MazeCapcha {
         this.keys = new Set();
         this.animationId = null;
 
+        // Bot detection system
+        this.botDetection = {
+            movements: [],
+            keyPresses: [],
+            perfectLineCount: 0,
+            suspiciousPatterns: 0,
+            startTime: Date.now(),
+            lastPositions: [],
+            directionChanges: 0,
+            constantVelocityFrames: 0,
+            isBot: false,
+            botReasons: [],
+            directManipulationDetected: false,
+            keysSetSize: 0,
+            totalFrames: 0,
+            framesWithMovement: 0
+        };
+
         setTimeout(() => {
             this.resizeCanvas();
             this.generateMaze();
             this.setupEventListeners();
             this.gameLoop();
-            console.log('Maze initialized with', this.checkpoints.length, 'checkpoints');
         }, 100);
     }
 
@@ -55,6 +72,34 @@ class MazeCapcha {
         this.goal.y = this.canvas.height / 2;
     }
 
+    isPointClearOfObstacle(x, y, clearanceRadius = 80) {
+        for (let obstacle of this.obstacles) {
+            const closestX = Math.max(obstacle.x, Math.min(x, obstacle.x + obstacle.width));
+            const closestY = Math.max(obstacle.y, Math.min(y, obstacle.y + obstacle.height));
+            
+            const distX = x - closestX;
+            const distY = y - closestY;
+            const distance = Math.sqrt(distX * distX + distY * distY);
+            
+            if (distance < clearanceRadius) {
+                return false;
+            }
+        }
+
+        for (let danger of this.dangerZones) {
+            const dist = Math.hypot(x - danger.x, y - danger.y);
+            if (dist < danger.radius + clearanceRadius) {
+                return false;
+            }
+        }
+
+        if (x < 50 || x > this.canvas.width - 50 || y < 50 || y > this.canvas.height - 50) {
+            return false;
+        }
+
+        return true;
+    }
+
     generateMaze() {
         this.obstacles = [];
         this.dangerZones = [];
@@ -64,24 +109,23 @@ class MazeCapcha {
         const usableWidth = this.canvas.width - padding * 2;
         const usableHeight = this.canvas.height - padding * 2;
 
-        // Generate obstacles
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 5; i++) {
             let obstacle;
             let valid = true;
             let attempts = 0;
 
             do {
                 obstacle = {
-                    x: Math.random() * (usableWidth - 60) + padding,
-                    y: Math.random() * (usableHeight - 60) + padding,
-                    width: Math.random() * 40 + 30,
-                    height: Math.random() * 40 + 30
+                    x: Math.random() * (usableWidth - 80) + padding + 40,
+                    y: Math.random() * (usableHeight - 80) + padding + 40,
+                    width: Math.random() * 50 + 40,
+                    height: Math.random() * 50 + 40
                 };
 
                 const distToStart = Math.hypot(obstacle.x - 40, obstacle.y - this.canvas.height / 2);
                 const distToEnd = Math.hypot(obstacle.x - (this.canvas.width - 40), obstacle.y - this.canvas.height / 2);
 
-                if (distToStart < 80 || distToEnd < 80) {
+                if (distToStart < 100 || distToEnd < 100) {
                     valid = false;
                 } else {
                     valid = true;
@@ -92,28 +136,29 @@ class MazeCapcha {
 
             if (valid) {
                 this.obstacles.push(obstacle);
+                console.log(`📦 Obstacle ${i + 1} placed`);
             }
         }
 
-        // Generate danger zones
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 2; i++) {
             let danger;
             let valid = true;
             let attempts = 0;
 
             do {
                 danger = {
-                    x: Math.random() * (usableWidth - 100) + padding + 50,
-                    y: Math.random() * (usableHeight - 100) + padding + 50,
-                    radius: Math.random() * 30 + 20,
+                    x: Math.random() * (usableWidth - 120) + padding + 60,
+                    y: Math.random() * (usableHeight - 120) + padding + 60,
+                    radius: Math.random() * 25 + 15,
                     angle: 0
                 };
 
                 valid = true;
+                
                 for (let obstacle of this.obstacles) {
                     const distX = Math.abs(danger.x - (obstacle.x + obstacle.width / 2));
                     const distY = Math.abs(danger.y - (obstacle.y + obstacle.height / 2));
-                    const minDist = danger.radius + Math.max(obstacle.width, obstacle.height) / 2 + 30;
+                    const minDist = danger.radius + Math.max(obstacle.width, obstacle.height) / 2 + 50;
 
                     if (distX < minDist && distY < minDist) {
                         valid = false;
@@ -126,78 +171,77 @@ class MazeCapcha {
 
             if (valid) {
                 this.dangerZones.push(danger);
+                console.log(`⚠️ Danger zone ${i + 1} placed`);
             }
         }
 
-        // Generate exactly 3 checkpoints at specific positions
         const checkpointXPositions = [
             this.canvas.width * 0.25,
             this.canvas.width * 0.5,
             this.canvas.width * 0.75
         ];
 
-        for (let i = 0; i < 3; i++) {
-            let checkpoint;
-            let valid = false;
+        for (let checkpointIndex = 0; checkpointIndex < 3; checkpointIndex++) {
+            let checkpoint = null;
+            let foundValidSpot = false;
             let attempts = 0;
-            const maxAttempts = 20; // Increase attempts to ensure creation
-
-            do {
-                // Create variation in Y position
-                const yVariation = (Math.random() - 0.5) * (this.canvas.height * 0.4);
+            const maxAttempts = 100;
+            
+            while (!foundValidSpot && attempts < maxAttempts) {
+                const targetX = checkpointXPositions[checkpointIndex];
+                const x = targetX + (Math.random() - 0.5) * 100;
+                const y = Math.random() * (this.canvas.height - 100) + 50;
+                
                 checkpoint = {
-                    x: checkpointXPositions[i],
-                    y: this.canvas.height / 2 + yVariation,
+                    x: Math.max(60, Math.min(this.canvas.width - 60, x)),
+                    y: Math.max(60, Math.min(this.canvas.height - 60, y)),
                     reached: false,
-                    index: i
+                    index: checkpointIndex
                 };
 
-                // Clamp Y to valid range
-                checkpoint.y = Math.max(50, Math.min(this.canvas.height - 50, checkpoint.y));
+                if (this.isPointClearOfObstacle(checkpoint.x, checkpoint.y, 100)) {
+                    foundValidSpot = true;
+                    console.log(`✅ Checkpoint ${checkpointIndex + 1} placed at (${checkpoint.x.toFixed(0)}, ${checkpoint.y.toFixed(0)})`);
+                } else {
+                    attempts++;
+                }
+            }
 
-                valid = true;
+            if (!foundValidSpot) {
+                attempts = 0;
+                while (!foundValidSpot && attempts < maxAttempts) {
+                    const targetX = checkpointXPositions[checkpointIndex];
+                    const x = targetX + (Math.random() - 0.5) * 150;
+                    const y = Math.random() * (this.canvas.height - 100) + 50;
+                    
+                    checkpoint = {
+                        x: Math.max(60, Math.min(this.canvas.width - 60, x)),
+                        y: Math.max(60, Math.min(this.canvas.height - 60, y)),
+                        reached: false,
+                        index: checkpointIndex
+                    };
 
-                // Check collision with obstacles
-                for (let obstacle of this.obstacles) {
-                    const distX = Math.abs(checkpoint.x - (obstacle.x + obstacle.width / 2));
-                    const distY = Math.abs(checkpoint.y - (obstacle.y + obstacle.height / 2));
-                    const minDist = 30 + Math.max(obstacle.width, obstacle.height) / 2;
-
-                    if (distX < minDist && distY < minDist) {
-                        valid = false;
-                        break;
+                    if (this.isPointClearOfObstacle(checkpoint.x, checkpoint.y, 60)) {
+                        foundValidSpot = true;
+                        console.log(`⚠️ Checkpoint ${checkpointIndex + 1} placed with reduced clearance at (${checkpoint.x.toFixed(0)}, ${checkpoint.y.toFixed(0)})`);
+                    } else {
+                        attempts++;
                     }
                 }
+            }
 
-                // Check collision with danger zones
-                if (valid) {
-                    for (let danger of this.dangerZones) {
-                        const dist = Math.hypot(checkpoint.x - danger.x, checkpoint.y - danger.y);
-                        if (dist < danger.radius + 40) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                }
-
-                attempts++;
-            } while (!valid && attempts < maxAttempts);
-
-            // Force add checkpoint if all attempts fail (to guarantee 3 checkpoints)
-            if (!valid) {
-                checkpoint = {
-                    x: checkpointXPositions[i],
-                    y: this.canvas.height / 2 + (Math.random() - 0.5) * 100,
-                    reached: false,
-                    index: i
-                };
-                checkpoint.y = Math.max(50, Math.min(this.canvas.height - 50, checkpoint.y));
+            if (!foundValidSpot) {
+                console.warn(`❌ Could not place checkpoint ${checkpointIndex + 1}. Regenerating maze...`);
+                this.generateMaze();
+                return;
             }
 
             this.checkpoints.push(checkpoint);
         }
 
-        console.log('Generated checkpoints:', this.checkpoints);
+        console.log(`✅ Maze generation complete - ${this.checkpoints.length} checkpoints placed`);
+        console.log(`📦 Total obstacles: ${this.obstacles.length}`);
+        console.log(`⚠️ Total danger zones: ${this.dangerZones.length}`);
     }
 
     setupEventListeners() {
@@ -206,6 +250,16 @@ class MazeCapcha {
             if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
                 this.keys.add(key);
                 e.preventDefault();
+                
+                // Track key press timing
+                this.botDetection.keyPresses.push({
+                    key: key,
+                    time: Date.now(),
+                    playerPos: {x: this.player.x, y: this.player.y}
+                });
+                
+                // Debug log
+                console.log('✅ Keyboard event:', key, '- Total:', this.botDetection.keyPresses.length);
             }
         });
 
@@ -218,17 +272,49 @@ class MazeCapcha {
     }
 
     getInvertedMovement(moveX, moveY) {
-        if (this.gameState.invertionLevel >= 1) {
-            moveX *= -1;
+        let newMoveX = moveX;
+        let newMoveY = moveY;
+
+        if (this.gameState.invertionLevel === 1) {
+            newMoveX *= -1;
         }
-        if (this.gameState.invertionLevel >= 2) {
-            moveY *= -1;
+        else if (this.gameState.invertionLevel === 2) {
+            newMoveY *= -1;
+        }
+        else if (this.gameState.invertionLevel === 3) {
+            newMoveX *= -1;
+            newMoveY *= -1;
         }
 
-        return { moveX, moveY };
+        return { moveX: newMoveX, moveY: newMoveY };
     }
 
     updatePlayer() {
+        // Bot detection - count frames
+        this.botDetection.totalFrames++;
+        
+        // Check if player is actually moving
+        if (Math.abs(this.player.vx) > 0.1 || Math.abs(this.player.vy) > 0.1) {
+            this.botDetection.framesWithMovement++;
+        }
+        
+        // Early detection at frame 50
+        if (this.botDetection.totalFrames === 50) {
+            console.log('🔍 BOT CHECK AT 50 FRAMES:');
+            console.log('   Frames with movement:', this.botDetection.framesWithMovement);
+            console.log('   Keyboard events recorded:', this.botDetection.keyPresses.length);
+            
+            // If player moved for more than 20 frames but has fewer than 5 keyboard events
+            if (this.botDetection.framesWithMovement > 20 && this.botDetection.keyPresses.length < 5) {
+                this.botDetection.directManipulationDetected = true;
+                this.botDetection.isBot = true;
+                this.botDetection.botReasons = [
+                    `Movement in ${this.botDetection.framesWithMovement} frames but only ${this.botDetection.keyPresses.length} keyboard events`
+                ];
+                console.error('🚫 BOT DETECTED: Direct key manipulation');
+            }
+        }
+        
         let moveX = 0;
         let moveY = 0;
 
@@ -288,9 +374,9 @@ class MazeCapcha {
                 this.gameState.invertionLevel++;
                 
                 const invertionMessages = [
-                    'Checkpoint 1 reached! Inversion Level 1 (X-axis inverted).',
-                    'Checkpoint 2 reached! Inversion Level 2 (Y-axis also inverted).',
-                    'Checkpoint 3 reached! Inversion Level 3 (Full chaos!).'
+                    '✅ Checkpoint 1 reached! LEFT & RIGHT controls inverted.',
+                    '✅ Checkpoint 2 reached! UP & DOWN controls inverted.',
+                    '✅ Checkpoint 3 reached! ALL controls inverted (LEFT↔RIGHT, UP↔DOWN).'
                 ];
 
                 if (this.gameState.currentCheckpoint <= 3) {
@@ -298,12 +384,12 @@ class MazeCapcha {
                 }
 
                 if (this.gameState.currentCheckpoint === 3) {
-                    document.getElementById('quirkMessage').textContent = 'All 3 checkpoints reached! Navigate to END with full inversion!';
+                    document.getElementById('quirkMessage').textContent = '⚠️ All checkpoints reached! Navigate to END with FULL inversion!';
                 }
             }
         }
 
-        // Check goal - only reachable after all 3 checkpoints
+        // Check goal
         const distToGoal = Math.hypot(this.player.x - this.goal.x, this.player.y - this.goal.y);
         if (distToGoal < 25 && this.gameState.currentCheckpoint === 3) {
             this.completeGame();
@@ -349,12 +435,98 @@ class MazeCapcha {
         document.getElementById('quirkMessage').textContent = 'Navigate to all 3 checkpoints, then to END...';
     }
 
+    analyzeBotBehavior() {
+        // Check for direct key manipulation
+        if (this.botDetection.directManipulationDetected) {
+            this.botDetection.isBot = true;
+            console.warn('🤖 BOT DETECTED: Direct manipulation');
+            return;
+        }
+        
+        // Check key press timing
+        if (this.botDetection.keyPresses.length >= 50) {
+            const recentPresses = this.botDetection.keyPresses.slice(-50);
+            const intervals = [];
+            
+            for (let i = 1; i < recentPresses.length; i++) {
+                intervals.push(recentPresses[i].time - recentPresses[i-1].time);
+            }
+            
+            const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+            const roboticIntervals = intervals.filter(i => 
+                Math.abs(i - avgInterval) < 2
+            ).length;
+            
+            const regularityPercent = (roboticIntervals / intervals.length) * 100;
+            
+            console.log('🔍 Key Timing Analysis:');
+            console.log('   Regularity:', regularityPercent.toFixed(1), '%');
+            
+            if (regularityPercent > 90 && intervals.length > 40) {
+                this.botDetection.isBot = true;
+                this.botDetection.botReasons.push(`Robotic key timing: ${regularityPercent.toFixed(1)}%`);
+                console.warn('🤖 BOT DETECTED: Key timing too perfect');
+            }
+        }
+        
+        // Check superhuman speed
+        const timeElapsed = (Date.now() - this.botDetection.startTime) / 1000;
+        
+        if (this.gameState.currentCheckpoint === 3 && timeElapsed < 3) {
+            this.botDetection.isBot = true;
+            this.botDetection.botReasons.push(`Superhuman speed: ${timeElapsed.toFixed(1)}s`);
+        }
+    }
+
     completeGame() {
-        this.gameState.completed = true;
-        document.getElementById('status').textContent = 'Maze completed successfully';
-        document.getElementById('status').className = 'message-area success';
-        document.getElementById('statusValue').textContent = 'Complete';
-        document.getElementById('submitBtn').disabled = false;
+        // Final bot check
+        console.log('🎯 FINAL BOT CHECK:');
+        console.log('   Total frames:', this.botDetection.totalFrames);
+        console.log('   Frames with movement:', this.botDetection.framesWithMovement);
+        console.log('   Keyboard events:', this.botDetection.keyPresses.length);
+        
+        // If significant movement with very few keyboard events = BOT
+        if (this.botDetection.framesWithMovement > 50 && this.botDetection.keyPresses.length < 20) {
+            this.botDetection.isBot = true;
+            this.botDetection.botReasons = [
+                `Only ${this.botDetection.keyPresses.length} keyboard events for ${this.botDetection.framesWithMovement} frames (expected ~${this.botDetection.framesWithMovement})`
+            ];
+        }
+        
+        this.analyzeBotBehavior();
+        
+        console.log('=== FINAL BOT DETECTION REPORT ===');
+        console.log('Is Bot:', this.botDetection.isBot);
+        console.log('Reasons:', this.botDetection.botReasons);
+        console.log('Time:', (Date.now() - this.botDetection.startTime) / 1000, 'seconds');
+        console.log('================================');
+        
+        if (this.botDetection.isBot) {
+            // BOT DETECTED
+            this.gameState.completed = false;
+            document.getElementById('status').textContent = '⚠️ Suspicious activity detected. Verification failed.';
+            document.getElementById('status').className = 'message-area error';
+            document.getElementById('statusValue').textContent = 'Failed';
+            document.getElementById('submitBtn').disabled = true;
+            
+            console.error('🚫 BOT VERIFICATION FAILED');
+            console.error('Reasons:', this.botDetection.botReasons);
+            
+            setTimeout(() => {
+                document.getElementById('quirkMessage').textContent = 
+                    '🤖 Bot behavior detected. Please solve manually.';
+            }, 500);
+            
+        } else {
+            // HUMAN VERIFIED
+            this.gameState.completed = true;
+            document.getElementById('status').textContent = 'Maze completed successfully ✅';
+            document.getElementById('status').className = 'message-area success';
+            document.getElementById('statusValue').textContent = 'Complete';
+            document.getElementById('submitBtn').disabled = false;
+            
+            console.log('✅ HUMAN VERIFIED');
+        }
     }
 
     draw() {
@@ -442,9 +614,15 @@ class MazeCapcha {
             this.ctx.setLineDash([]);
         }
 
-        // Draw checkpoints
+        // Draw checkpoints with numbers
         for (let i = 0; i < this.checkpoints.length; i++) {
             const checkpoint = this.checkpoints[i];
+            
+            this.ctx.fillStyle = checkpoint.reached ? 'rgba(22, 163, 74, 0.1)' : 'rgba(234, 179, 8, 0.1)';
+            this.ctx.beginPath();
+            this.ctx.arc(checkpoint.x, checkpoint.y, 20, 0, Math.PI * 2);
+            this.ctx.fill();
+            
             this.ctx.fillStyle = checkpoint.reached ? '#16a34a' : '#eab308';
             this.ctx.beginPath();
             this.ctx.arc(checkpoint.x, checkpoint.y, 8, 0, Math.PI * 2);
@@ -460,13 +638,20 @@ class MazeCapcha {
             this.ctx.fillText(i + 1, checkpoint.x, checkpoint.y);
         }
 
-        // Inversion level indicator
+        // Control mode indicator
         this.ctx.fillStyle = '#2563eb';
-        this.ctx.font = '12px Arial';
+        this.ctx.font = '13px Arial';
         this.ctx.textAlign = 'right';
         this.ctx.textBaseline = 'top';
-        const invertionText = ['Normal', 'Inverted X', 'Inverted X+Y', 'Fully Inverted'];
-        this.ctx.fillText('Mode: ' + invertionText[this.gameState.invertionLevel], this.canvas.width - 10, 10);
+        
+        const modeNames = [
+            '🟢 NORMAL',
+            '🔴 LEFT & RIGHT INVERTED',
+            '🔴 UP & DOWN INVERTED',
+            '🔴 ALL INVERTED'
+        ];
+        
+        this.ctx.fillText(modeNames[this.gameState.invertionLevel], this.canvas.width - 10, 10);
 
         // Player
         this.ctx.fillStyle = '#2563eb';
@@ -489,8 +674,14 @@ class MazeCapcha {
 
 document.addEventListener('DOMContentLoaded', () => {
     const captcha = new MazeCapcha();
-
+    
+    window.captchaInstance = captcha;
+    
     document.getElementById('submitBtn').addEventListener('click', () => {
-        alert(`Verification Complete\n\nAttempts: ${captcha.gameState.deaths}\n\nForm submitted successfully.`);
+        if (captcha.botDetection.isBot) {
+            alert('⚠️ Verification Failed\n\nBot behavior was detected. Please complete the CAPTCHA manually.');
+        } else {
+            alert(`✅ Verification Complete\n\nAttempts: ${captcha.gameState.deaths}\n\nForm submitted successfully.`);
+        }
     });
 });

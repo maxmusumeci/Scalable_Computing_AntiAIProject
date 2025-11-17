@@ -232,7 +232,6 @@ function bindSlider(slider, index){
       state.placed[index]=true;
       state.completedOrder.push(slider.dataset.colorName);
 
-      // 检查顺序
       const expectedOrder = state.sliderOrder.map(c=>c.name.toLowerCase()).slice(0,state.completedOrder.length);
       if(state.completedOrder.join(',')!==expectedOrder.join(',')){
         failVerification();
@@ -263,6 +262,7 @@ newPuzzle();
 </script>
 </body>
 </html>
+
 
 
 

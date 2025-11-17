@@ -130,7 +130,7 @@ function roundRect(ctx,x,y,w,h,r){
 
 function newPuzzle(){
   const selectedColors = [...colors].sort(()=>Math.random()-0.5).slice(0,3);
-  state.sliderOrder = [...selectedColors]; // 用户必须按此顺序拖动
+  state.sliderOrder = [...selectedColors]; 
   state.targets = [];
   state.placed = [false,false,false];
   state.completedOrder = [];
@@ -262,6 +262,7 @@ newPuzzle();
 </script>
 </body>
 </html>
+
 
 
 

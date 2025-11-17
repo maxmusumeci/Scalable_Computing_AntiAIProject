@@ -1,0 +1,299 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Multi-Slider CAPTCHA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial, sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
+#panel { position:relative; width:420px; height:280px; margin-bottom:20px; }
+canvas { position:absolute; top:0; left:0; }
+#bgCanvas { width:420px; height:280px; z-index:1; display:none; }
+#displayCanvas { width:420px; height:280px; z-index:2; border:1px solid #ccc; }
+#pieceCanvas { width:420px; height:280px; z-index:3; pointer-events:none; }
+
+.sliderContainer { width:420px; height:40px; background:#eee; border:1px solid #ccc; border-radius:6px; position:relative; user-select:none; margin-bottom:10px; }
+.slider { width:40px; height:100%; border-radius:6px; position:absolute; left:0; top:0; cursor:pointer; }
+
+#status { margin-bottom:10px; z-index:5; font-weight:bold; }
+button { margin-right:8px; margin-top:5px; z-index:5; }
+</style>
+</head>
+<body>
+<h2>Multi-Slider CAPTCHA</h2>
+
+<div id="panel">
+  <canvas id="bgCanvas" width="420" height="280"></canvas>
+  <canvas id="displayCanvas" width="420" height="280"></canvas>
+  <canvas id="pieceCanvas" width="420" height="280"></canvas>
+</div>
+
+<div id="sliderContainer1" class="sliderContainer"><div id="slider1" class="slider"></div></div>
+<div id="sliderContainer2" class="sliderContainer"><div id="slider2" class="slider"></div></div>
+<div id="sliderContainer3" class="sliderContainer"><div id="slider3" class="slider"></div></div>
+
+<div id="status">Drag the sliders in correct color order</div>
+<div><button id="refreshBtn">Change Image</button></div>
+
+<script>
+(async function(){
+const BG_W=420, BG_H=280, PIECE_SIZE=60;
+const colors = [
+  {name:'Red', code:'#E34234'},
+  {name:'Orange', code:'#FFAC1C'},
+  {name:'Yellow', code:'#FBEC5D'},
+  {name:'Green', code:'#93C572'},
+  {name:'Blue', code:'#6495ED'},
+  {name:'Purple', code:'#C3B1E1'}
+];
+
+const bgCanvas=document.getElementById('bgCanvas');
+const bgCtx=bgCanvas.getContext('2d');
+const displayCanvas=document.getElementById('displayCanvas');
+const displayCtx=displayCanvas.getContext('2d');
+const pieceCanvas=document.getElementById('pieceCanvas');
+const pieceCtx=pieceCanvas.getContext('2d');
+
+const slider1=document.getElementById('slider1');
+const slider2=document.getElementById('slider2');
+const slider3=document.getElementById('slider3');
+const container1=document.getElementById('sliderContainer1');
+const container2=document.getElementById('sliderContainer2');
+const container3=document.getElementById('sliderContainer3');
+
+const status=document.getElementById('status');
+const refreshBtn=document.getElementById('refreshBtn');
+
+let images=[], imageURLs=[], currentImageIndex=0;
+
+let state = {
+  targets: [],
+  sliders: [slider1, slider2, slider3],
+  containers: [container1, container2, container3],
+  placed: [false,false,false],
+  completedOrder: [],
+  startTs: null,
+  sliderOrder: [], 
+  events: [[],[],[]]
+};
+
+async function fetchImageList(){
+  try{
+    const res = await fetch('/images');
+    const j = await res.json();
+    if(j.ok && Array.isArray(j.images) && j.images.length>0){
+      imageURLs = j.images;
+      await preloadImages(imageURLs);
+    } else {
+      imageURLs = ['/static/images/bg1.jpg'];
+      await preloadImages(imageURLs);
+    }
+  } catch(e){ imageURLs = ['/static/images/bg1.jpg']; await preloadImages(imageURLs);}
+}
+
+function preloadImages(urls){
+  images = [];
+  return new Promise(resolve=>{
+    let loaded=0;
+    for(let u of urls){
+      const img = new Image();
+      img.crossOrigin='anonymous';
+      img.onload = ()=>{ loaded++; if(loaded===urls.length) resolve(); };
+      img.onerror = ()=>{ loaded++; if(loaded===urls.length) resolve(); };
+      img.src = u;
+      images.push(img);
+    }
+    if(urls.length===0) resolve();
+  });
+}
+
+function chooseRandomIndex(){ return images.length>0? Math.floor(Math.random()*images.length):0; }
+
+function setCurrentImage(idx){
+  if(images.length===0) return;
+  currentImageIndex=idx % images.length;
+  const img = images[currentImageIndex];
+  bgCtx.clearRect(0,0,BG_W,BG_H);
+  bgCtx.drawImage(img,0,0,BG_W,BG_H);
+  drawDisplay();
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function newPuzzle(){
+  const selectedColors = [...colors].sort(()=>Math.random()-0.5).slice(0,3);
+  state.sliderOrder = [...selectedColors]; // 用户必须按此顺序拖动
+  state.targets = [];
+  state.placed = [false,false,false];
+  state.completedOrder = [];
+  state.events = [[],[],[]];
+  state.startTs = null;
+
+  const positions=[];
+  for(let i=0;i<3;i++){
+    let x,y,ok=false;
+    while(!ok){
+      x=Math.floor(50 + Math.random()*(BG_W-110));
+      y=Math.floor(20 + Math.random()*(BG_H-PIECE_SIZE-20));
+      ok = positions.every(p=>Math.abs(p.x-x)>PIECE_SIZE || Math.abs(p.y-y)>PIECE_SIZE);
+    }
+    positions.push({x,y});
+    state.targets.push({x,y});
+  }
+
+  const sliderIndices = [0,1,2].sort(()=>Math.random()-0.5);
+  sliderIndices.forEach((si,i)=>{
+    state.sliders[i].style.left='0px';
+    state.sliders[i].style.background = selectedColors[si].code;
+    state.sliders[i].dataset.colorName = selectedColors[si].name.toLowerCase();
+  });
+
+  updateAllPieces();
+  drawDisplay();
+
+  const colorNames = selectedColors.map(c=>c.name.toLowerCase());
+  status.textContent = "Drag the sliders in order: "+colorNames.join(", ");
+}
+
+function drawDisplay(){
+  displayCtx.clearRect(0,0,BG_W,BG_H);
+  displayCtx.drawImage(bgCanvas,0,0);
+  state.targets.forEach(t=>{
+    displayCtx.save();
+    displayCtx.fillStyle='rgba(255,255,255,0.5)';
+    roundRect(displayCtx,t.x,t.y,PIECE_SIZE,PIECE_SIZE,6);
+    displayCtx.fill();
+    displayCtx.strokeStyle='rgba(255,255,255,0.7)';
+    displayCtx.lineWidth=2;
+    roundRect(displayCtx,t.x,t.y,PIECE_SIZE,PIECE_SIZE,6);
+    displayCtx.stroke();
+    displayCtx.restore();
+  });
+}
+
+function updateAllPieces(){
+  pieceCtx.clearRect(0,0,BG_W,BG_H);
+  state.sliders.forEach((slider,i)=>{
+    pieceCtx.save();
+    pieceCtx.translate(parseInt(slider.style.left), state.targets[i].y);
+    roundRect(pieceCtx,0,0,PIECE_SIZE,PIECE_SIZE,6);
+    pieceCtx.clip();
+    pieceCtx.drawImage(bgCanvas,state.targets[i].x,state.targets[i].y,PIECE_SIZE,PIECE_SIZE,0,0,PIECE_SIZE,PIECE_SIZE);
+    pieceCtx.restore();
+  });
+}
+
+function failVerification(){
+  status.textContent = "Verification failed!";
+  setTimeout(()=>{
+    currentImageIndex = chooseRandomIndex();
+    setCurrentImage(currentImageIndex);
+    newPuzzle();
+  }, 1000);
+}
+
+function bindSlider(slider, index){
+  let dragging=false;
+  const container = state.containers[index];
+  slider.addEventListener('pointerdown', e=>{
+    dragging=true;
+    state.startTs=state.startTs||Date.now();
+    state.events[index].push({t:0,x:e.clientX,y:e.clientY,state:'down'});
+  });
+  window.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const rect = container.getBoundingClientRect();
+    let px = e.clientX - rect.left - slider.offsetWidth/2;
+    px = Math.max(0, Math.min(BG_W-PIECE_SIZE, px));
+    slider.style.left = px+'px';
+    updateAllPieces();
+    state.events[index].push({t:Date.now()-state.startTs,x:e.clientX,y:e.clientY,state:'move'});
+  });
+  window.addEventListener('pointerup', e=>{
+    if(!dragging) return;
+    dragging=false;
+    const rect = container.getBoundingClientRect();
+    let px = e.clientX - rect.left - slider.offsetWidth/2;
+    px = Math.max(0, Math.min(BG_W-PIECE_SIZE, px));
+    slider.style.left = px+'px';
+    updateAllPieces();
+    state.events[index].push({t:Date.now()-state.startTs,x:e.clientX,y:e.clientY,state:'up'});
+
+    const dx = Math.abs(px - state.targets[index].x);
+    if(dx<10){
+      state.placed[index]=true;
+      state.completedOrder.push(slider.dataset.colorName);
+
+      // 检查顺序
+      const expectedOrder = state.sliderOrder.map(c=>c.name.toLowerCase()).slice(0,state.completedOrder.length);
+      if(state.completedOrder.join(',')!==expectedOrder.join(',')){
+        failVerification();
+      } else if(state.placed.every(p=>p)){
+        status.textContent="Verification passed!";
+      }
+    } else {
+      failVerification();
+    }
+  });
+}
+
+bindSlider(slider1,0);
+bindSlider(slider2,1);
+bindSlider(slider3,2);
+
+refreshBtn.addEventListener('click', ()=>{
+  currentImageIndex = chooseRandomIndex();
+  setCurrentImage(currentImageIndex);
+  newPuzzle();
+});
+
+await fetchImageList();
+currentImageIndex=chooseRandomIndex();
+setCurrentImage(currentImageIndex);
+newPuzzle();
+})();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

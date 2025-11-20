@@ -29,6 +29,26 @@
     border-bottom: 1px solid #eee;
 }
 
+.refresh-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+    flex: 1;
+    text-align: center;
+}
+
+.refresh-text {
+    color: #666;
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
 .modal-refresh-btn,
 .modal-close-btn {
     background: none;
@@ -54,11 +74,6 @@
 .modal-close-btn:disabled {
     color: #ccc;
     cursor: not-allowed;
-}
-
-.modal-header h3 {
-    margin: 0;
-    color: #333;
 }
 
 .modal-content {

@@ -87,6 +87,8 @@ function findWinningLine(grid) {
     return null;
 }
 
+
+// Vertical or Horizontal
 function areAdjacent(cell1, cell2) {
     const [r1, c1] = cell1;
     const [r2, c2] = cell2;
@@ -155,6 +157,8 @@ function randomizeHiddenAndLocked() {
         }
     }
 
+    // Hide a random cell.
+    // The numebr of hidden cells is random
     const hiddenCount = Math.floor(Math.random() * 2) + 1;
     for (let i = 0; i < hiddenCount; i++) {
         const r = Math.floor(Math.random() * GRID_DIM);
@@ -162,6 +166,7 @@ function randomizeHiddenAndLocked() {
         hiddenCells[r][c] = true;
     }
 
+    // Lock one of the 9 cells 
     let lr, lc;
     while (true) {
         lr = Math.floor(Math.random() * GRID_DIM);

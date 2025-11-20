@@ -1,0 +1,209 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #00000080;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-container {
+    background-color: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-refresh-btn,
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #666;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.modal-refresh-btn:hover:not(:disabled),
+.modal-close-btn:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.modal-refresh-btn:disabled,
+.modal-close-btn:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.modal-content {
+    padding: 1.5rem;
+}
+
+.instructions {
+    margin-bottom: 1.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.instructions p {
+    margin: 0.5rem 0;
+}
+
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.success-message {
+    color: #28a745;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.grid-row {
+    display: flex;
+    gap: 8px;
+}
+
+.grid-cell {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.cell-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+}
+
+.grid-cell.animating {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 2;
+}
+
+.grid-cell.animating[data-direction="right"] {
+    transform: translateX(88px);
+}
+
+.grid-cell.animating[data-direction="left"] {
+    transform: translateX(-88px);
+}
+
+.grid-cell.animating[data-direction="down"] {
+    transform: translateY(88px);
+}
+
+.grid-cell.animating[data-direction="up"] {
+    transform: translateY(-88px);
+}
+
+/* 隐藏格子：第一次点击只翻开 */
+.grid-cell.hidden-cell {
+    background-color: #f2f2f2;
+}
+
+.grid-cell.hidden-cell .cell-content {
+    color: #888;
+    font-weight: bold;
+}
+
+/* 锁定格子：不可操作 */
+.grid-cell.locked-cell {
+    background-color: #e6e6e6;
+    border-style: dashed;
+    cursor: not-allowed;
+}
+
+.grid-cell.locked-cell .cell-content {
+    opacity: 0.5;
+}
+
+/* Hover：排除隐藏 / 锁定 / winning / selected */
+.grid-cell.hovered:not(.selected):not(.winning):not(.hidden-cell):not(.locked-cell) {
+    background-color: #f0f8ff;
+    border-color: #b3d9ff;
+}
+
+.grid-cell.selected {
+    background-color: #e6f7ff;
+    border-color: #1890ff;
+    border-width: 3px;
+}
+
+.grid-cell.winning {
+    background-color: #f0fff4;
+    border-color: #52c41a;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.05);
+    }
+}

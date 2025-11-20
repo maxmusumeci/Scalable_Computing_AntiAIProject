@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Match Verification</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS files -->
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="candycrush.css">
+</head>
+
+<body>
+    <div class="verification-container">
+        <!-- User Icon -->
+        <div class="avatar-wrapper">
+            <i class="fas fa-user-circle user-avatar"></i>
+        </div>
+
+        <!-- Verify button -->
+        <button class="btn verify-btn" id="verifyBtn">
+            Start Verification
+        </button>
+
+        <!-- Next Page Button -->
+        <button class="btn next-btn disabled" id="nextBtn" disabled>
+            Go to Next Page
+        </button>
+    </div>
+
+    <!-- Verification Modal (initially hidden) -->
+    <div id="verificationModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <button class="modal-refresh-btn" id="refreshBtn" aria-label="Refresh verification">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <h3>Grid Match Verification</h3>
+                <button class="modal-close-btn" id="closeBtn" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="modal-content">
+                <div class="instructions">
+                    <p>Create a straight line of 3 identical symbols (horizontal or vertical).</p>
+                    <p>Click a cell to select it, then click an adjacent cell to swap.</p>
+                </div>
+
+                <!-- Grid Container -->
+                <div class="grid-container">
+                    <div id="successMessage" class="success-message" style="display: none;">
+                        Verification Successful!
+                    </div>
+                    <div id="gridContainer" class="grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript files -->
+    <script src="app.js"></script>
+    <script src="candycrush.js"></script>
+</body>
+
+</html>

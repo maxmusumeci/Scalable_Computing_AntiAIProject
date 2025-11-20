@@ -4,12 +4,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grid Match Verification</title>
+    <title>Grid Match Verification - 3 CAPTCHAs</title>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- CSS files -->
     <link rel="stylesheet" href="app.css">
     <link rel="stylesheet" href="candycrush.css">
+    <style>
+        /* Progress Bar Styles */
+        .progress-container {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 24px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 12px;
+            transition: width 0.5s ease;
+            width: 0%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .verified {
+            background: #4CAF50 !important;
+            color: white !important;
+        }
+        
+        .verification-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .verification-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #1976D2;
+        }
+        
+        .verification-info strong {
+            color: #0D47A1;
+        }
+    </style>
 </head>
 
 <body>
@@ -17,6 +84,24 @@
         <!-- User Icon -->
         <div class="avatar-wrapper">
             <i class="fas fa-user-circle user-avatar"></i>
+        </div>
+
+        <!-- Information Box -->
+        <div class="verification-info">
+            <p><strong>Multi-CAPTCHA Verification System</strong></p>
+            <p>You must successfully complete <strong>all 3 types of CAPTCHAs</strong> to verify you're human:</p>
+            <p style="margin-top: 10px; font-size: 13px;">
+                🎮 Candy Match • 🌀 Maze • 🧩 Slider<br>
+                <span style="font-size: 12px; color: #666;">(Order will be randomized)</span>
+            </p>
+        </div>
+
+        <!-- Progress Container -->
+        <div id="progressContainer" class="progress-container" style="display: none;">
+            <div id="progressText" class="progress-text">CAPTCHA 0 of 3 completed</div>
+            <div class="progress-bar-container">
+                <div id="progressBar" class="progress-bar-fill"></div>
+            </div>
         </div>
 
         <!-- Verify button -->

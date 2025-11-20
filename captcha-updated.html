@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adaptive Two-Stage CAPTCHA Verification</title>
+    <title>CAPTCHA Verification (CAPTCHA ${CURRENT_PROGRESS + 1} of 3)</title>
     <style>
         /* Reset & Box Model */
         * {
@@ -38,78 +38,6 @@
             padding: 56px 40px 40px 40px;
             width: 100%;
             max-width: 560px;
-        }
-
-        .stage-indicator {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 36px;
-            gap: 24px;
-        }
-
-        .stage {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .stage-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e6eef9;
-            color: #46546a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 17px;
-            transition: all 0.3s;
-        }
-
-        .stage.active .stage-number {
-            background: #047aff;
-            color: #fff;
-            transform: scale(1.08);
-            box-shadow: 0 0 0 4px #e6eef9;
-        }
-
-        .stage.completed .stage-number {
-            background: #11b786;
-            color: #fff;
-        }
-
-        .stage.skipped .stage-number {
-            background: #cbd9e6;
-            color: #6e7897;
-        }
-
-        .stage-text {
-            font-size: 15px;
-            font-weight: 600;
-            color: #46546a;
-            transition: color 0.3s;
-        }
-
-        .stage.active .stage-text {
-            color: #047aff;
-        }
-
-        .stage.completed .stage-text {
-            color: #11b786;
-        }
-
-        .stage.skipped .stage-text {
-            color: #6e7897;
-            text-decoration: line-through;
-        }
-
-        .stage-divider {
-            width: 44px;
-            height: 3px;
-            background: linear-gradient(90deg, #e6eef9 0, #cbd9e6 100%);
-            border-radius: 2px;
         }
 
         .captcha-section {
@@ -211,72 +139,6 @@
             color: #047aff;
         }
 
-        .score-breakdown {
-            background: #f9fbff;
-            border: 1px solid #e6eef9;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 18px;
-            display: none;
-        }
-
-        .score-breakdown.visible {
-            display: block;
-        }
-
-        .score-breakdown h3 {
-            font-size: 14px;
-            color: #133985;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .score-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #e6eef9;
-            font-size: 13px;
-        }
-
-        .score-item:last-child {
-            border-bottom: none;
-        }
-
-        .score-item-label {
-            color: #46546a;
-        }
-
-        .score-item-value {
-            font-weight: 700;
-            color: #047aff;
-        }
-
-        .score-item-value.penalty {
-            color: #e74c3c;
-        }
-
-        .total-score {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 2px solid #cbd9e6;
-            display: flex;
-            justify-content: space-between;
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .total-score .label {
-            color: #133985;
-        }
-
-        .total-score .value {
-            color: #11b786;
-            font-size: 20px;
-        }
-
         .message-area {
             margin-top: 14px;
             min-height: 24px;
@@ -373,12 +235,9 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
+            0%, 100% {
                 transform: scale(1);
             }
-
             50% {
                 transform: scale(1.05);
             }
@@ -532,6 +391,26 @@
             font-weight: 600;
             margin-top: 16px;
         }
+
+        .captcha-progress {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .captcha-progress h3 {
+            font-size: 16px;
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+
+        .captcha-progress p {
+            font-size: 14px;
+            color: #0D47A1;
+        }
     </style>
 </head>
 
@@ -546,18 +425,12 @@
     </div>
 
     <div class="main-container">
-        <!-- Stage Indicator -->
-        <div class="stage-indicator">
-            <div class="stage active" id="stage1Indicator">
-                <div class="stage-number">1</div>
-                <div class="stage-text" id="stage1Text">Loading...</div>
-            </div>
-            <div class="stage-divider"></div>
-            <div class="stage" id="stage2Indicator">
-                <div class="stage-number">2</div>
-                <div class="stage-text" id="stage2Text">Loading...</div>
-            </div>
+        <!-- Progress Indicator -->
+        <div class="captcha-progress">
+            <h3 id="progressTitle">CAPTCHA 1 of 3</h3>
+            <p id="progressSubtitle">Complete all three types to verify</p>
         </div>
+
         <!-- Maze CAPTCHA -->
         <div class="captcha-section active" id="mazeCaptcha">
             <div class="header">
@@ -589,51 +462,20 @@
                 </div>
             </div>
 
-            <div class="score-breakdown" id="scoreBreakdown">
-                <h3>🎯 Human Behavior Score</h3>
-                <div class="score-item">
-                    <span class="score-item-label">Base Score</span>
-                    <span class="score-item-value" id="baseScore">+100</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-item-label">Natural Movement</span>
-                    <span class="score-item-value" id="movementScore">+0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-item-label">Variable Timing</span>
-                    <span class="score-item-value" id="timingScore">+0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-item-label">Human Errors</span>
-                    <span class="score-item-value" id="errorScore">+0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-item-label">Completion Time</span>
-                    <span class="score-item-value" id="timeScore">+0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-item-label">Bot Indicators</span>
-                    <span class="score-item-value penalty" id="botPenalty">-0</span>
-                </div>
-                <div class="total-score">
-                    <span class="label">Total Score:</span>
-                    <span class="value" id="totalScore">100</span>
-                </div>
-            </div>
-
             <div class="message-area" id="mazeStatus"></div>
             <div class="button-group">
-                <button id="mazeSubmitBtn" disabled>Complete Verification</button>
+                <button id="mazeSubmitBtn" disabled>Continue to Next CAPTCHA</button>
             </div>
             <div class="footer-text" id="quirkMessage">Start the maze...</div>
         </div>
+
         <!-- Slider CAPTCHA -->
         <div class="captcha-section" id="sliderCaptcha">
             <div class="header">
-                <h1 id="sliderTitle">Slider Challenge</h1>
-                <p class="subtitle" id="sliderSubtitle">Puzzle verification step</p>
+                <h1>Slider Challenge</h1>
+                <p class="subtitle">Puzzle verification step</p>
             </div>
-            <div class="instruction" id="sliderInstruction">
+            <div class="instruction">
                 Drag each colored slider to align puzzle pieces on the image in the correct color order.
             </div>
             <div id="panel">
@@ -655,17 +497,16 @@
                 <button id="refreshBtn">Change Image</button>
             </div>
         </div>
+
         <!-- Final Success Screen -->
         <div class="captcha-section" id="finalSuccess">
             <div class="final-success">
                 <div class="success-icon">✓</div>
-                <h2>Verification Complete!</h2>
-                <p id="successMessage">You have successfully completed the CAPTCHA verification.</p>
-                <div class="verification-badge" id="verificationBadge">✓ Human Verified</div>
+                <h2>CAPTCHA Complete!</h2>
+                <p id="successMessage">You have successfully completed this CAPTCHA.</p>
+                <div class="verification-badge" id="verificationBadge">✓ CAPTCHA Verified</div>
                 <div class="button-group">
-                    <button onclick="window.location.href='index.html?verified=1'">
-                        Back to main page
-                    </button>
+                    <button id="continueBtn">Continue</button>
                 </div>
             </div>
         </div>
@@ -689,25 +530,27 @@
         // ============================================
         // CONFIGURATION
         // ============================================
-
-        // Randomly determine stage order at page load
-        const HUMAN_SCORE_THRESHOLD = 65; // Score needed to skip second challenge
         const TIME_LIMIT_SECONDS = 120; // 2 minutes time limit
 
-        // Read URL
+        // Read URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const SINGLE_STAGE_MODE = urlParams.get('mode'); // 'maze' | 'slider' | null
+        const SINGLE_STAGE_MODE = urlParams.get('mode'); // 'maze' | 'slider' | 'candy'
+        const CURRENT_PROGRESS = parseInt(urlParams.get('progress')) || 0; // Track overall progress (0, 1, or 2)
+        const CAPTCHA_ORDER = urlParams.get('order') || ''; // Get the CAPTCHA order
 
-        // The phase order is set according to the mode
-        const STAGE_ORDER =
-            SINGLE_STAGE_MODE === 'maze'
-                ? ['maze']
-                : SINGLE_STAGE_MODE === 'slider'
-                    ? ['slider']
-                    : (Math.random() < 0.5 ? ['maze', 'slider'] : ['slider', 'maze']);
+        console.log('Current CAPTCHA:', SINGLE_STAGE_MODE);
+        console.log('Progress:', CURRENT_PROGRESS + 1, '/ 3');
+        console.log('Order:', CAPTCHA_ORDER);
 
-        console.log('CAPTCHA Stage Order:', STAGE_ORDER, 'SINGLE_STAGE_MODE:', SINGLE_STAGE_MODE);
-
+        // Update progress indicator
+        document.getElementById('progressTitle').textContent = `CAPTCHA ${CURRENT_PROGRESS + 1} of 3`;
+        const captchaTypes = {
+            'candy': '🎮 Candy Match',
+            'maze': '🌀 Maze Navigation',
+            'slider': '🧩 Slider Puzzle'
+        };
+        document.getElementById('progressSubtitle').textContent = 
+            `Current: ${captchaTypes[SINGLE_STAGE_MODE] || 'Challenge'}`;
 
         // Global timer state
         let timerStartTime = null;
@@ -787,9 +630,6 @@
             });
             document.getElementById('timeoutScreen').classList.add('active');
 
-            // Disable all interactive elements
-            document.getElementById('mazeSubmitBtn').disabled = true;
-
             console.log('CAPTCHA timed out');
         }
 
@@ -823,27 +663,6 @@
                 this.dangerZones = [];
                 this.keys = new Set();
                 this.animationId = null;
-
-                this.botDetection = {
-                    movements: [],
-                    keyPresses: [],
-                    perfectLineCount: 0,
-                    suspiciousPatterns: 0,
-                    startTime: Date.now(),
-                    lastPositions: [],
-                    directionChanges: 0,
-                    constantVelocityFrames: 0,
-                    isBot: false,
-                    botReasons: [],
-                    directManipulationDetected: false,
-                    keysSetSize: 0,
-                    totalFrames: 0,
-                    framesWithMovement: 0,
-                    pauseCount: 0,
-                    backtrackCount: 0,
-                    velocityVariance: [],
-                    humanScore: 100
-                };
 
                 setTimeout(() => {
                     this.resizeCanvas();
@@ -971,19 +790,8 @@
                 document.addEventListener('keydown', (e) => {
                     const key = e.key.toLowerCase();
                     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
-                        const wasEmpty = this.keys.size === 0;
                         this.keys.add(key);
                         e.preventDefault();
-                        this.botDetection.keyPresses.push({
-                            key: key,
-                            time: Date.now(),
-                            playerPos: { x: this.player.x, y: this.player.y }
-                        });
-
-                        // Detect pauses (human-like behavior)
-                        if (wasEmpty && this.botDetection.keyPresses.length > 5) {
-                            this.botDetection.pauseCount++;
-                        }
                     }
                 });
 
@@ -1004,25 +812,7 @@
             }
 
             updatePlayer() {
-                if (captchaTimedOut) return; // Stop if timed out
-
-                this.botDetection.totalFrames++;
-                const hadMovement = Math.abs(this.player.vx) > 0.1 || Math.abs(this.player.vy) > 0.1;
-                if (hadMovement) {
-                    this.botDetection.framesWithMovement++;
-                }
-
-                // Track velocity for variance calculation
-                const currentVelocity = Math.sqrt(this.player.vx * this.player.vx + this.player.vy * this.player.vy);
-                this.botDetection.velocityVariance.push(currentVelocity);
-
-                if (this.botDetection.totalFrames === 50) {
-                    if (this.botDetection.framesWithMovement > 20 && this.botDetection.keyPresses.length < 5) {
-                        this.botDetection.directManipulationDetected = true;
-                        this.botDetection.isBot = true;
-                        this.botDetection.botReasons = [`Movement in ${this.botDetection.framesWithMovement} frames but only ${this.botDetection.keyPresses.length} keyboard events`];
-                    }
-                }
+                if (captchaTimedOut) return;
 
                 let moveX = 0, moveY = 0;
                 if (this.keys.has('arrowup') || this.keys.has('w')) moveY = -1;
@@ -1041,19 +831,6 @@
 
                 let newX = this.player.x + this.player.vx;
                 let newY = this.player.y + this.player.vy;
-
-                // Track backtracking (human-like correction behavior)
-                if (this.botDetection.lastPositions.length > 0) {
-                    const lastPos = this.botDetection.lastPositions[this.botDetection.lastPositions.length - 1];
-                    if (newX < lastPos.x - 5) {
-                        this.botDetection.backtrackCount++;
-                    }
-                }
-
-                this.botDetection.lastPositions.push({ x: newX, y: newY, time: Date.now() });
-                if (this.botDetection.lastPositions.length > 100) {
-                    this.botDetection.lastPositions.shift();
-                }
 
                 newX = Math.max(this.player.radius, Math.min(this.canvas.width - this.player.radius, newX));
                 newY = Math.max(this.player.radius, Math.min(this.canvas.height - this.player.radius, newY));
@@ -1140,155 +917,15 @@
                 document.getElementById('quirkMessage').textContent = 'Navigate to all 3 checkpoints, then to END...';
             }
 
-            calculateHumanScore() {
-                let score = 100; // Base score
-                const breakdown = {
-                    base: 100,
-                    movement: 0,
-                    timing: 0,
-                    errors: 0,
-                    time: 0,
-                    botPenalty: 0
-                };
-
-                // 1. Natural Movement Score (0-25 points)
-                if (this.botDetection.velocityVariance.length > 50) {
-                    const velocities = this.botDetection.velocityVariance;
-                    const avg = velocities.reduce((a, b) => a + b, 0) / velocities.length;
-                    const variance = velocities.reduce((sum, v) => sum + Math.pow(v - avg, 2), 0) / velocities.length;
-                    const stdDev = Math.sqrt(variance);
-
-                    // High variance = more human-like
-                    if (stdDev > 0.5) {
-                        breakdown.movement = 25;
-                        score += 25;
-                    } else if (stdDev > 0.3) {
-                        breakdown.movement = 15;
-                        score += 15;
-                    } else if (stdDev > 0.15) {
-                        breakdown.movement = 8;
-                        score += 8;
-                    }
-                }
-
-                // 2. Timing Variance Score (0-20 points)
-                if (this.botDetection.keyPresses.length >= 30) {
-                    const intervals = [];
-                    for (let i = 1; i < this.botDetection.keyPresses.length; i++) {
-                        intervals.push(this.botDetection.keyPresses[i].time - this.botDetection.keyPresses[i - 1].time);
-                    }
-                    const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-                    const roboticIntervals = intervals.filter(i => Math.abs(i - avgInterval) < 3).length;
-                    const regularityPercent = (roboticIntervals / intervals.length) * 100;
-
-                    if (regularityPercent < 30) {
-                        breakdown.timing = 20;
-                        score += 20;
-                    } else if (regularityPercent < 50) {
-                        breakdown.timing = 12;
-                        score += 12;
-                    } else if (regularityPercent < 70) {
-                        breakdown.timing = 5;
-                        score += 5;
-                    } else {
-                        // Very robotic timing
-                        breakdown.botPenalty -= 30;
-                        score -= 30;
-                    }
-                }
-
-                // 3. Human Errors Score (0-20 points)
-                // Deaths and backtracks indicate human behavior
-                const errorScore = Math.min(20, (this.gameState.deaths * 8) + (this.botDetection.backtrackCount * 2));
-                breakdown.errors = errorScore;
-                score += errorScore;
-
-                // Pauses also indicate human behavior
-                if (this.botDetection.pauseCount > 3) {
-                    breakdown.errors += 5;
-                    score += 5;
-                }
-
-                // 4. Completion Time Score (0-15 points)
-                const timeElapsed = (Date.now() - this.botDetection.startTime) / 1000;
-                if (timeElapsed >= 8 && timeElapsed <= 60) {
-                    breakdown.time = 15;
-                    score += 15;
-                } else if (timeElapsed > 60) {
-                    breakdown.time = 10;
-                    score += 10;
-                } else if (timeElapsed < 5) {
-                    // Superhuman speed
-                    breakdown.botPenalty -= 40;
-                    score -= 40;
-                } else if (timeElapsed < 8) {
-                    breakdown.time = 5;
-                    score += 5;
-                }
-
-                // 5. Bot Detection Penalties
-                if (this.botDetection.directManipulationDetected) {
-                    breakdown.botPenalty -= 100;
-                    score -= 100;
-                }
-
-                if (this.botDetection.framesWithMovement > 50 && this.botDetection.keyPresses.length < 20) {
-                    breakdown.botPenalty -= 50;
-                    score -= 50;
-                }
-
-                // Ensure score is between 0-200
-                score = Math.max(0, Math.min(200, score));
-
-                this.botDetection.humanScore = score;
-                this.updateScoreDisplay(breakdown, score);
-
-                return score;
-            }
-
-            updateScoreDisplay(breakdown, totalScore) {
-                document.getElementById('baseScore').textContent = '+' + breakdown.base;
-                document.getElementById('movementScore').textContent = '+' + breakdown.movement;
-                document.getElementById('timingScore').textContent = '+' + breakdown.timing;
-                document.getElementById('errorScore').textContent = '+' + breakdown.errors;
-                document.getElementById('timeScore').textContent = '+' + breakdown.time;
-                document.getElementById('botPenalty').textContent = breakdown.botPenalty;
-                document.getElementById('totalScore').textContent = totalScore;
-
-                document.getElementById('scoreBreakdown').classList.add('visible');
-            }
-
             completeGame() {
-                if (captchaTimedOut) return; // Ignore if timed out
-
-                const humanScore = this.calculateHumanScore();
+                if (captchaTimedOut) return;
 
                 this.gameState.completed = true;
                 document.getElementById('statusValue').textContent = 'Complete';
                 document.getElementById('mazeSubmitBtn').disabled = false;
-
-                const isFirstStage = STAGE_ORDER[0] === 'maze';
-
-                if (isFirstStage) {
-                    // Maze is first stage - can skip second stage if score is high
-                    if (humanScore >= HUMAN_SCORE_THRESHOLD) {
-                        document.getElementById('mazeStatus').textContent = `✅ Score: ${humanScore}/200 - Human verified!`;
-                        document.getElementById('mazeStatus').className = 'message-area success';
-                        document.getElementById('quirkMessage').textContent = '🎉 High confidence human behavior detected!';
-                        document.getElementById('mazeSubmitBtn').textContent = 'Complete Verification';
-                    } else {
-                        document.getElementById('mazeStatus').textContent = `⚠️ Score: ${humanScore}/200 - Additional verification needed`;
-                        document.getElementById('mazeStatus').className = 'message-area info';
-                        document.getElementById('quirkMessage').textContent = '⚡ Please complete the slider challenge';
-                        document.getElementById('mazeSubmitBtn').textContent = 'Continue to Slider Challenge';
-                    }
-                } else {
-                    // Maze is second stage - always complete after this
-                    document.getElementById('mazeStatus').textContent = `✅ Score: ${humanScore}/200 - Verification complete!`;
-                    document.getElementById('mazeStatus').className = 'message-area success';
-                    document.getElementById('quirkMessage').textContent = '🎉 Both challenges completed!';
-                    document.getElementById('mazeSubmitBtn').textContent = 'Complete Verification';
-                }
+                document.getElementById('mazeStatus').textContent = '✅ Maze completed!';
+                document.getElementById('mazeStatus').className = 'message-area success';
+                document.getElementById('quirkMessage').textContent = '🎉 Well done!';
             }
 
             draw() {
@@ -1430,10 +1067,7 @@
             containers: [],
             placed: [false, false, false],
             completedOrder: [],
-            startTs: null,
             sliderOrder: [],
-            events: [[], [], []],
-            humanScore: 100,
             completed: false
         };
 
@@ -1445,99 +1079,6 @@
             ctx.arcTo(x, y + h, x, y, r);
             ctx.arcTo(x, y, x + w, y, r);
             ctx.closePath();
-        }
-
-        function calculateSliderScore() {
-            let score = 100;
-            const breakdown = {
-                base: 100,
-                movement: 0,
-                timing: 0,
-                naturalness: 0,
-                time: 0,
-                botPenalty: 0
-            };
-
-            // Analyze all three sliders
-            let totalMoveEvents = 0;
-            let totalVariance = 0;
-            let hasNaturalPauses = false;
-
-            for (let i = 0; i < 3; i++) {
-                const events = sliderState.events[i];
-                const moveEvents = events.filter(e => e.state === 'move');
-                totalMoveEvents += moveEvents.length;
-
-                if (moveEvents.length > 5) {
-                    // Check for movement variance (human-like)
-                    const speeds = [];
-                    for (let j = 1; j < moveEvents.length; j++) {
-                        const timeDiff = moveEvents[j].t - moveEvents[j - 1].t;
-                        const distDiff = Math.abs(moveEvents[j].x - moveEvents[j - 1].x);
-                        if (timeDiff > 0) {
-                            speeds.push(distDiff / timeDiff);
-                        }
-                    }
-
-                    if (speeds.length > 3) {
-                        const avg = speeds.reduce((a, b) => a + b, 0) / speeds.length;
-                        const variance = speeds.reduce((sum, v) => sum + Math.pow(v - avg, 2), 0) / speeds.length;
-                        totalVariance += Math.sqrt(variance);
-                    }
-
-                    // Check for pauses (human-like hesitation)
-                    for (let j = 1; j < events.length; j++) {
-                        if (events[j].t - events[j - 1].t > 200) {
-                            hasNaturalPauses = true;
-                        }
-                    }
-                }
-            }
-
-            // 1. Movement naturalness (0-30 points)
-            if (totalVariance > 5) {
-                breakdown.movement = 30;
-                score += 30;
-            } else if (totalVariance > 2) {
-                breakdown.movement = 15;
-                score += 15;
-            } else if (totalVariance < 0.5) {
-                // Very uniform = bot-like
-                breakdown.botPenalty -= 20;
-                score -= 20;
-            }
-
-            // 2. Natural pauses and hesitation (0-20 points)
-            if (hasNaturalPauses) {
-                breakdown.naturalness = 20;
-                score += 20;
-            }
-
-            // 3. Movement count (0-15 points)
-            if (totalMoveEvents > 30 && totalMoveEvents < 200) {
-                breakdown.timing = 15;
-                score += 15;
-            } else if (totalMoveEvents < 10) {
-                // Too few movements = suspicious
-                breakdown.botPenalty -= 30;
-                score -= 30;
-            }
-
-            // 4. Total time (0-15 points)
-            const totalTime = (Date.now() - sliderState.startTs) / 1000;
-            if (totalTime >= 5 && totalTime <= 45) {
-                breakdown.time = 15;
-                score += 15;
-            } else if (totalTime < 3) {
-                // Too fast = bot
-                breakdown.botPenalty -= 40;
-                score -= 40;
-            }
-
-            score = Math.max(0, Math.min(200, score));
-            sliderState.humanScore = score;
-
-            return score;
         }
 
         function initSliderCaptcha() {
@@ -1599,8 +1140,6 @@
                 sliderState.targets = [];
                 sliderState.placed = [false, false, false];
                 sliderState.completedOrder = [];
-                sliderState.events = [[], [], []];
-                sliderState.startTs = null;
 
                 const positions = [];
                 for (let i = 0; i < 3; i++) {
@@ -1629,7 +1168,7 @@
             }
 
             function failVerification() {
-                document.getElementById('sliderStatus').textContent = "Verification failed! Resetting...";
+                document.getElementById('sliderStatus').textContent = "Wrong order! Resetting...";
                 setTimeout(() => {
                     newPuzzle();
                 }, 1000);
@@ -1641,8 +1180,6 @@
 
                 slider.addEventListener('pointerdown', e => {
                     dragging = true;
-                    sliderState.startTs = sliderState.startTs || Date.now();
-                    sliderState.events[index].push({ t: 0, x: e.clientX, y: e.clientY, state: 'down' });
                 });
 
                 window.addEventListener('pointermove', e => {
@@ -1652,12 +1189,11 @@
                     px = Math.max(0, Math.min(rect.width - PIECE_SIZE, px));
                     slider.style.left = px + 'px';
                     updateAllPieces();
-                    sliderState.events[index].push({ t: Date.now() - sliderState.startTs, x: e.clientX, y: e.clientY, state: 'move' });
                 });
 
                 window.addEventListener('pointerup', e => {
                     if (!dragging) return;
-                    if (captchaTimedOut) return; // Ignore if timed out
+                    if (captchaTimedOut) return;
 
                     dragging = false;
                     const rect = container.getBoundingClientRect();
@@ -1665,7 +1201,6 @@
                     px = Math.max(0, Math.min(rect.width - PIECE_SIZE, px));
                     slider.style.left = px + 'px';
                     updateAllPieces();
-                    sliderState.events[index].push({ t: Date.now() - sliderState.startTs, x: e.clientX, y: e.clientY, state: 'up' });
 
                     const dx = Math.abs(px - sliderState.targets[index].x);
                     if (dx < 10) {
@@ -1677,42 +1212,10 @@
                             failVerification();
                         } else if (sliderState.placed.every(p => p)) {
                             sliderState.completed = true;
-                            const sliderScore = calculateSliderScore();
-
-                            const isFirstStage = STAGE_ORDER[0] === 'slider';
-
-                            // Single stage: Only Slider, complete to pass (score is shown here).
-                            if (SINGLE_STAGE_MODE === 'slider') {
-                                document.getElementById('sliderStatus').textContent =
-                                    `✅ Score: ${sliderScore}/200 - Verification Complete!`;
-                                setTimeout(() => {
-                                    showFinalSuccess(true, 'slider');
-                                }, 1000);
-                                return;
-                            }
-
-                            // Original two-phase logic
-                            if (isFirstStage) {
-                                if (sliderScore >= HUMAN_SCORE_THRESHOLD) {
-                                    document.getElementById('sliderStatus').textContent =
-                                        `✅ Score: ${sliderScore}/200 - Human verified!`;
-                                    setTimeout(() => {
-                                        showFinalSuccess(false, 'slider');
-                                    }, 1000);
-                                } else {
-                                    document.getElementById('sliderStatus').textContent =
-                                        `⚠️ Score: ${sliderScore}/200 - Please complete maze challenge`;
-                                    setTimeout(() => {
-                                        showSecondStage();
-                                    }, 1500);
-                                }
-                            } else {
-                                // Slider is second stage - always complete
-                                document.getElementById('sliderStatus').textContent = "Verification Complete! ✅";
-                                setTimeout(() => {
-                                    showFinalSuccess(true, 'slider');
-                                }, 1000);
-                            }
+                            document.getElementById('sliderStatus').textContent = "✅ Slider puzzle completed!";
+                            setTimeout(() => {
+                                showFinalSuccess();
+                            }, 1000);
                         }
                     } else {
                         failVerification();
@@ -1732,92 +1235,19 @@
         }
 
         // ============================================
-        // STAGE TRANSITION LOGIC
+        // SUCCESS AND NAVIGATION
         // ============================================
-        function showStage(stageNumber) {
-            document.querySelectorAll('.captcha-section').forEach(section => {
-                section.classList.remove('active');
-            });
-
-            const stageName = STAGE_ORDER[stageNumber - 1];
-
-            if (stageName === 'maze') {
-                document.getElementById('mazeCaptcha').classList.add('active');
-                if (stageNumber === 1) {
-                    document.getElementById('stage1Indicator').classList.add('active');
-                    document.getElementById('stage2Indicator').classList.remove('active', 'completed');
-                } else {
-                    document.getElementById('stage2Indicator').classList.add('active');
-                }
-            } else if (stageName === 'slider') {
-                document.getElementById('sliderCaptcha').classList.add('active');
-
-                // Update slider text based on stage
-                if (stageNumber === 1) {
-                    document.getElementById('sliderTitle').textContent = 'Slider Challenge';
-                    document.getElementById('sliderSubtitle').textContent = 'Puzzle verification step';
-                    document.getElementById('sliderInstruction').textContent = 'Drag each colored slider to align puzzle pieces on the image in the correct color order.';
-                    document.getElementById('stage1Indicator').classList.add('active');
-                    document.getElementById('stage2Indicator').classList.remove('active', 'completed');
-                } else {
-                    document.getElementById('sliderTitle').textContent = 'Additional Verification';
-                    document.getElementById('sliderSubtitle').textContent = 'One more step required';
-                    document.getElementById('sliderInstruction').textContent = 'Your previous challenge requires additional verification. Drag each colored slider to align puzzle pieces on the image in the correct color order.';
-                    document.getElementById('stage2Indicator').classList.add('active');
-                }
-                initSliderCaptcha();
-            }
-        }
-
-        function showSecondStage() {
-            document.querySelectorAll('.captcha-section').forEach(section => {
-                section.classList.remove('active');
-            });
-
-            const secondStageName = STAGE_ORDER[1];
-
-            document.getElementById('stage1Indicator').classList.remove('active');
-            document.getElementById('stage1Indicator').classList.add('completed');
-            document.getElementById('stage2Indicator').classList.add('active');
-
-            if (secondStageName === 'maze') {
-                document.getElementById('mazeCaptcha').classList.add('active');
-            } else {
-                document.getElementById('sliderCaptcha').classList.add('active');
-                // Set as second stage text
-                document.getElementById('sliderTitle').textContent = 'Additional Verification';
-                document.getElementById('sliderSubtitle').textContent = 'One more step required';
-                document.getElementById('sliderInstruction').textContent = 'Your maze behavior requires additional verification. Drag each colored slider to align puzzle pieces on the image in the correct color order.';
-                initSliderCaptcha();
-            }
-        }
-
-        function showFinalSuccess(completedBothStages = false, lastStage = 'maze') {
-            stopTimer(); // Stop the timer
-            document.getElementById('timerContainer').style.display = 'none'; // Hide timer
+        function showFinalSuccess() {
+            stopTimer();
+            document.getElementById('timerContainer').style.display = 'none';
 
             document.querySelectorAll('.captcha-section').forEach(section => {
                 section.classList.remove('active');
             });
             document.getElementById('finalSuccess').classList.add('active');
 
-            if (completedBothStages) {
-                document.getElementById('stage2Indicator').classList.add('completed');
-                document.getElementById('stage2Indicator').classList.remove('active');
-                document.getElementById('successMessage').textContent = 'You have successfully completed both verification stages.';
-                document.getElementById('verificationBadge').textContent = '✓ Verified After Additional Challenge';
-            } else {
-                document.getElementById('stage2Indicator').classList.add('skipped');
-                const firstStageName = STAGE_ORDER[0].charAt(0).toUpperCase() + STAGE_ORDER[0].slice(1);
-                document.getElementById('successMessage').textContent = `High-confidence human behavior detected. Stage 2 skipped.`;
-                document.getElementById('verificationBadge').textContent = `✓ Human Verified (${firstStageName} Only)`;
-            }
-
-            setTimeout(function () {
-                window.location.href = 'index.html?verified=1';
-            }, 2000);
-
-
+            document.getElementById('successMessage').textContent = 
+                `You have successfully completed ${captchaTypes[SINGLE_STAGE_MODE]}.`;
         }
 
         // ============================================
@@ -1826,68 +1256,42 @@
         let mazeCaptcha;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Start the timer
             startTimer();
 
-            // Set stage indicator names based on random order
-            startTimer();
-
-            const stage1TextEl = document.getElementById('stage1Text');
-            const stage2TextEl = document.getElementById('stage2Text');
-            const stage2IndicatorEl = document.getElementById('stage2Indicator');
-
-            stage1TextEl.textContent =
-                STAGE_ORDER[0].charAt(0).toUpperCase() + STAGE_ORDER[0].slice(1);
-
-            if (STAGE_ORDER.length > 1) {
-                stage2TextEl.textContent =
-                    STAGE_ORDER[1].charAt(0).toUpperCase() + STAGE_ORDER[1].slice(1);
-            } else {
-                stage2IndicatorEl.style.display = 'none';
-            }
-
-            // Initialize maze if it's used
-            if (STAGE_ORDER.includes('maze')) {
+            // Initialize the appropriate CAPTCHA based on mode
+            if (SINGLE_STAGE_MODE === 'maze') {
+                document.getElementById('mazeCaptcha').classList.add('active');
                 mazeCaptcha = new MazeCaptcha();
-            }
 
-
-            document.getElementById('mazeSubmitBtn').addEventListener('click', () => {
-                if (captchaTimedOut) {
-                    alert('Time limit exceeded. Please refresh and try again.');
-                    return;
-                }
-
-                if (mazeCaptcha && mazeCaptcha.gameState.completed) {
-                    const humanScore = mazeCaptcha.botDetection.humanScore;
-                    const isFirstStage = STAGE_ORDER[0] === 'maze';
-
-                    if (SINGLE_STAGE_MODE === 'maze') {
-                        showFinalSuccess(true, 'maze');
+                document.getElementById('mazeSubmitBtn').addEventListener('click', () => {
+                    if (captchaTimedOut) {
+                        alert('Time limit exceeded. Please refresh and try again.');
                         return;
                     }
 
-                    if (isFirstStage) {
-                        // Maze is first stage
-                        if (humanScore >= HUMAN_SCORE_THRESHOLD) {
-                            // Pass directly - human-like behavior
-                            showFinalSuccess(false, 'maze');
-                        } else {
-                            // Needs additional verification
-                            showSecondStage();
-                        }
+                    if (mazeCaptcha && mazeCaptcha.gameState.completed) {
+                        showFinalSuccess();
                     } else {
-                        // Maze is second stage - always complete after this
-                        showFinalSuccess(true, 'maze');
+                        alert('Please complete the maze challenge first!');
                     }
+                });
+            } else if (SINGLE_STAGE_MODE === 'slider') {
+                document.querySelectorAll('.captcha-section').forEach(s => s.classList.remove('active'));
+                document.getElementById('sliderCaptcha').classList.add('active');
+                initSliderCaptcha();
+            }
+
+            // Continue button handler
+            document.getElementById('continueBtn').addEventListener('click', () => {
+                const newProgress = CURRENT_PROGRESS + 1;
+                if (newProgress >= 3) {
+                    // All 3 CAPTCHAs completed - return to index with verified=1
+                    window.location.href = 'index.html?verified=1';
                 } else {
-                    alert('Please complete the maze challenge first!');
+                    // More CAPTCHAs to go - return to index with progress
+                    window.location.href = `index.html?progress=${newProgress}&order=${CAPTCHA_ORDER}`;
                 }
             });
-
-
-            // Start with first stage
-            showStage(1);
         });
     </script>
 </body>

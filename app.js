@@ -184,6 +184,8 @@ function handleNextPage() {
     if (isVerified) {
         alert('Verification successful! Proceeding to next page...');
         // You can redirect to your actual next page here
-        // window.location.href = 'next-page.html';
+        window.location.href = 'exam.html';
+    } else {
+        alert('Please complete all CAPTCHAs before proceeding.');
     }
 }

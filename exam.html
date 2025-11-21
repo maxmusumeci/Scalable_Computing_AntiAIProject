@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Examination System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #000;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: #000;
+            color: #fff;
+            padding: 20px 0;
+            border-bottom: 3px solid #333;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .timer-box {
+            background: #fff;
+            color: #000;
+            padding: 12px 24px;
+            border: 2px solid #000;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-box.warning {
+            background: #000;
+            color: #fff;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.5; }
+        }
+
+        /* Setup Screen */
+        .setup-screen {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 60px;
+            max-width: 800px;
+            margin: 50px auto;
+        }
+
+        .setup-screen h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .setup-screen .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 15px;
+        }
+
+        .permission-box {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+        }
+
+        .permission-box.active {
+            border-color: #000;
+            border-width: 2px;
+            background: #fff;
+        }
+
+        .permission-box.denied {
+            background: #f9f9f9;
+            opacity: 0.7;
+        }
+
+        .permission-info h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .permission-info p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .status-badge {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .button {
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .button:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .button:disabled {
+            background: #e0e0e0;
+            border-color: #e0e0e0;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .button:disabled:hover {
+            background: #e0e0e0;
+            color: #999;
+        }
+
+        .button.secondary {
+            background: #fff;
+            color: #000;
+        }
+
+        .button.secondary:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .notice-box {
+            border: 2px solid #000;
+            background: #fff;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+
+        .notice-box strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        /* Exam Screen */
+        .exam-screen {
+            display: none;
+        }
+
+        .exam-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        /* Question Area */
+        .question-area {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 40px;
+        }
+
+        .exam-info {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exam-info span {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .progress-indicator {
+            height: 4px;
+            background: #e0e0e0;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #000;
+            width: 33.33%;
+            transition: width 0.3s;
+        }
+
+        .question-container {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .question {
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .question.active {
+            opacity: 1;
+            visibility: visible;
+            position: relative;
+        }
+
+        .question-header {
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .question h3 {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .options {
+            margin: 30px 0;
+        }
+
+        .option {
+            border: 1px solid #ddd;
+            padding: 16px 20px;
+            margin: 12px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            background: #fff;
+        }
+
+        .option:hover {
+            border-color: #000;
+            background: #fafafa;
+        }
+
+        .option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #000;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 15px;
+        }
+
+        .navigation {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Monitoring Panel */
+        .monitoring-panel {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .monitoring-panel h3 {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .webcam-container {
+            border: 2px solid #000;
+            margin-bottom: 20px;
+            background: #000;
+        }
+
+        .webcam-feed {
+            width: 100%;
+            height: 220px;
+            display: block;
+            object-fit: cover;
+        }
+
+        .monitoring-stats {
+            border: 1px solid #ddd;
+            background: #fafafa;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .alert-box {
+            margin-top: 15px;
+        }
+
+        .alert {
+            border: 2px solid #000;
+            background: #fff;
+            padding: 12px 15px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Submit Screen */
+        .submit-screen {
+            display: none;
+            background: #fff;
+            border: 2px solid #000;
+            padding: 60px;
+            max-width: 800px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .submit-screen h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .submit-screen .message {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 15px;
+        }
+
+        .summary-table {
+            border: 1px solid #ddd;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        @media (max-width: 1024px) {
+            .exam-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .monitoring-panel {
+                position: relative;
+                top: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .setup-screen,
+            .submit-screen {
+                padding: 30px;
+            }
+
+            .question-area {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>ONLINE EXAMINATION SYSTEM</h1>
+            <div class="timer-box" id="timer">10:00</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Setup Screen -->
+        <div class="setup-screen" id="setupScreen">
+            <h2>System Permissions Required</h2>
+            <p class="subtitle">The following permissions are mandatory to proceed with the examination</p>
+
+            <div class="permission-box" id="webcamPermission">
+                <div class="permission-info">
+                    <h4>Camera Access</h4>
+                    <p>Required for candidate verification and monitoring</p>
+                </div>
+                <span class="status-badge">PENDING</span>
+            </div>
+
+            <div class="permission-box" id="screenPermission">
+                <div class="permission-info">
+                    <h4>Screen Sharing</h4>
+                    <p>Required for activity monitoring during examination</p>
+                </div>
+                <span class="status-badge">PENDING</span>
+            </div>
+
+            <div class="permission-box active">
+                <div class="permission-info">
+                    <h4>Mouse Tracking</h4>
+                    <p>Automatically enabled for behavior analysis</p>
+                </div>
+                <span class="status-badge">ACTIVE</span>
+            </div>
+
+            <div style="margin-top: 40px; text-align: center;">
+                <button class="button" onclick="requestPermissions()">Grant Permissions</button>
+                <button class="button" id="startExamBtn" onclick="startExam()" disabled>Start Examination</button>
+            </div>
+
+            <div class="notice-box">
+                <strong>IMPORTANT INSTRUCTIONS:</strong>
+                Do not switch tabs, minimize browser, or leave the examination window. All activities are monitored and recorded. Any violation may result in automatic submission or disqualification.
+            </div>
+        </div>
+
+        <!-- Exam Screen -->
+        <div class="exam-screen" id="examScreen">
+            <div class="exam-layout">
+                <!-- Question Area -->
+                <div class="question-area">
+                    <div class="exam-info">
+                        <span>EXAMINATION IN PROGRESS</span>
+                        <span id="questionsAnswered">0/3 ANSWERED</span>
+                    </div>
+
+                    <div class="progress-indicator">
+                        <div class="progress-fill" id="progressBar"></div>
+                    </div>
+
+                    <div class="question-container">
+                        <!-- Question 1 -->
+                        <div class="question active" id="question1">
+                            <div class="question-header">
+                                <div class="question-number">Question 1 of 3</div>
+                                <h3>What is the primary purpose of object-oriented programming?</h3>
+                            </div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="q1" value="A">
+                                    <span class="option-text">A) To make code run faster</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q1" value="B">
+                                    <span class="option-text">B) To organize code into reusable, modular components</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q1" value="C">
+                                    <span class="option-text">C) To reduce file size</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q1" value="D">
+                                    <span class="option-text">D) To eliminate all bugs</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 2 -->
+                        <div class="question" id="question2">
+                            <div class="question-header">
+                                <div class="question-number">Question 2 of 3</div>
+                                <h3>Which data structure uses LIFO (Last In First Out) principle?</h3>
+                            </div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="q2" value="A">
+                                    <span class="option-text">A) Queue</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q2" value="B">
+                                    <span class="option-text">B) Stack</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q2" value="C">
+                                    <span class="option-text">C) Array</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q2" value="D">
+                                    <span class="option-text">D) Linked List</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 3 -->
+                        <div class="question" id="question3">
+                            <div class="question-header">
+                                <div class="question-number">Question 3 of 3</div>
+                                <h3>What does API stand for in software development?</h3>
+                            </div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="q3" value="A">
+                                    <span class="option-text">A) Advanced Programming Interface</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q3" value="B">
+                                    <span class="option-text">B) Application Programming Interface</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q3" value="C">
+                                    <span class="option-text">C) Automated Program Interaction</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="q3" value="D">
+                                    <span class="option-text">D) Applied Programming Integration</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation">
+                        <button class="button secondary" id="prevBtn" onclick="previousQuestion()" style="display: none;">← Previous</button>
+                        <button class="button" id="nextBtn" onclick="nextQuestion()">Next →</button>
+                        <button class="button" id="submitBtn" onclick="submitExam()" style="display: none;">Submit Exam</button>
+                    </div>
+                </div>
+
+                <!-- Monitoring Panel -->
+                <div class="monitoring-panel">
+                    <h3>Monitoring</h3>
+                    
+                    <div class="webcam-container">
+                        <video id="webcamVideo" class="webcam-feed" autoplay muted></video>
+                    </div>
+
+                    <div class="monitoring-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Mouse Movements</span>
+                            <span class="stat-value" id="mouseCount">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Tab Switches</span>
+                            <span class="stat-value" id="tabSwitches">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Time Remaining</span>
+                            <span class="stat-value" id="timeRemaining">10:00</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Status</span>
+                            <span class="stat-value">ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <div class="alert-box" id="warningAlert"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Screen -->
+        <div class="submit-screen" id="submitScreen">
+            <h2>Examination Submitted</h2>
+            <p class="message">Your responses have been recorded successfully</p>
+
+            <div class="summary-table">
+                <div class="summary-row">
+                    <span class="summary-label">Total Questions</span>
+                    <span class="summary-value">3</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Questions Answered</span>
+                    <span class="summary-value" id="finalAnswered">0</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Time Taken</span>
+                    <span class="summary-value" id="timeTaken">00:00</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Mouse Movements Detected</span>
+                    <span class="summary-value" id="finalMouseCount">0</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Tab Switches Detected</span>
+                    <span class="summary-value" id="finalTabSwitches">0</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Submission Status</span>
+                    <span class="summary-value">COMPLETED</span>
+                </div>
+            </div>
+
+            <button class="button" onclick="window.location.reload()">New Examination</button>
+        </div>
+    </div>
+
+    <script>
+        // Exam State Management
+        let examState = {
+            currentQuestion: 1,
+            answers: {},
+            mouseMovements: 0,
+            tabSwitches: 0,
+            webcamGranted: false,
+            screenGranted: false,
+            timeRemaining: 600,
+            timerInterval: null,
+            startTime: null,
+            webcamStream: null,
+            screenStream: null
+        };
+
+        // Request System Permissions
+        async function requestPermissions() {
+            try {
+                // Request Webcam
+                const webcamStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: false 
+                });
+                examState.webcamStream = webcamStream;
+                examState.webcamGranted = true;
+                
+                const webcamBox = document.getElementById('webcamPermission');
+                webcamBox.classList.add('active');
+                webcamBox.querySelector('.status-badge').textContent = 'GRANTED';
+            } catch (error) {
+                const webcamBox = document.getElementById('webcamPermission');
+                webcamBox.classList.add('denied');
+                webcamBox.querySelector('.status-badge').textContent = 'DENIED';
+                alert('Camera access is required to proceed with the examination.');
+                return;
+            }
+
+            try {
+                // Request Screen Sharing
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: true 
+                });
+                examState.screenStream = screenStream;
+                examState.screenGranted = true;
+                
+                const screenBox = document.getElementById('screenPermission');
+                screenBox.classList.add('active');
+                screenBox.querySelector('.status-badge').textContent = 'GRANTED';
+            } catch (error) {
+                const screenBox = document.getElementById('screenPermission');
+                screenBox.classList.add('denied');
+                screenBox.querySelector('.status-badge').textContent = 'DENIED';
+                alert('Screen sharing is required to proceed with the examination.');
+                return;
+            }
+
+            if (examState.webcamGranted && examState.screenGranted) {
+                document.getElementById('startExamBtn').disabled = false;
+            }
+        }
+
+        // Start Examination
+        function startExam() {
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('examScreen').style.display = 'block';
+
+            const video = document.getElementById('webcamVideo');
+            video.srcObject = examState.webcamStream;
+
+            examState.startTime = Date.now();
+            startTimer();
+            setupMouseTracking();
+            setupTabTracking();
+
+            document.addEventListener('contextmenu', (e) => e.preventDefault());
+            document.body.style.userSelect = 'none';
+        }
+
+        // Timer Management
+        function startTimer() {
+            examState.timerInterval = setInterval(() => {
+                examState.timeRemaining--;
+                
+                const minutes = Math.floor(examState.timeRemaining / 60);
+                const seconds = examState.timeRemaining % 60;
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                document.getElementById('timer').textContent = timeString;
+                document.getElementById('timeRemaining').textContent = timeString;
+
+                if (examState.timeRemaining <= 120) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+
+                if (examState.timeRemaining <= 0) {
+                    clearInterval(examState.timerInterval);
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        // Mouse Tracking
+        function setupMouseTracking() {
+            let mouseTimer = null;
+            document.addEventListener('mousemove', () => {
+                clearTimeout(mouseTimer);
+                mouseTimer = setTimeout(() => {
+                    examState.mouseMovements++;
+                    document.getElementById('mouseCount').textContent = examState.mouseMovements;
+                }, 100);
+            });
+        }
+
+        // Tab Visibility Tracking
+        function setupTabTracking() {
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    examState.tabSwitches++;
+                    document.getElementById('tabSwitches').textContent = examState.tabSwitches;
+                    
+                    const warningDiv = document.getElementById('warningAlert');
+                    warningDiv.innerHTML = `<div class="alert">WARNING #${examState.tabSwitches}: Tab switch detected</div>`;
+                    
+                    setTimeout(() => {
+                        warningDiv.innerHTML = '';
+                    }, 5000);
+                }
+            });
+        }
+
+        // Navigation Functions
+        function nextQuestion() {
+            if (examState.currentQuestion < 3) {
+                const currentAnswer = document.querySelector(`input[name="q${examState.currentQuestion}"]:checked`);
+                if (currentAnswer) {
+                    examState.answers[`q${examState.currentQuestion}`] = currentAnswer.value;
+                }
+
+                document.getElementById(`question${examState.currentQuestion}`).classList.remove('active');
+                examState.currentQuestion++;
+                document.getElementById(`question${examState.currentQuestion}`).classList.add('active');
+
+                document.getElementById('prevBtn').style.display = 'inline-block';
+                
+                if (examState.currentQuestion === 3) {
+                    document.getElementById('nextBtn').style.display = 'none';
+                    document.getElementById('submitBtn').style.display = 'inline-block';
+                }
+
+                const progress = (examState.currentQuestion / 3) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+
+                updateAnsweredCount();
+            }
+        }
+
+        function previousQuestion() {
+            if (examState.currentQuestion > 1) {
+                const currentAnswer = document.querySelector(`input[name="q${examState.currentQuestion}"]:checked`);
+                if (currentAnswer) {
+                    examState.answers[`q${examState.currentQuestion}`] = currentAnswer.value;
+                }
+
+                document.getElementById(`question${examState.currentQuestion}`).classList.remove('active');
+                examState.currentQuestion--;
+                document.getElementById(`question${examState.currentQuestion}`).classList.add('active');
+
+                if (examState.currentQuestion === 1) {
+                    document.getElementById('prevBtn').style.display = 'none';
+                }
+                
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('submitBtn').style.display = 'none';
+
+                const progress = (examState.currentQuestion / 3) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+        }
+
+        function updateAnsweredCount() {
+            const answeredCount = Object.keys(examState.answers).length;
+            document.getElementById('questionsAnswered').textContent = `${answeredCount}/3 ANSWERED`;
+        }
+
+        // Submit Examination
+        function submitExam() {
+            const currentAnswer = document.querySelector(`input[name="q${examState.currentQuestion}"]:checked`);
+            if (currentAnswer) {
+                examState.answers[`q${examState.currentQuestion}`] = currentAnswer.value;
+            }
+
+            clearInterval(examState.timerInterval);
+
+            const timeTaken = 600 - examState.timeRemaining;
+            const minutes = Math.floor(timeTaken / 60);
+            const seconds = timeTaken % 60;
+
+            if (examState.webcamStream) {
+                examState.webcamStream.getTracks().forEach(track => track.stop());
+            }
+            if (examState.screenStream) {
+                examState.screenStream.getTracks().forEach(track => track.stop());
+            }
+
+            document.getElementById('examScreen').style.display = 'none';
+            document.getElementById('submitScreen').style.display = 'block';
+
+            document.getElementById('finalAnswered').textContent = Object.keys(examState.answers).length;
+            document.getElementById('timeTaken').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('finalMouseCount').textContent = examState.mouseMovements;
+            document.getElementById('finalTabSwitches').textContent = examState.tabSwitches;
+
+            console.log('Examination Results:', examState);
+        }
+
+        // Track Answer Changes
+        document.addEventListener('change', (e) => {
+            if (e.target.type === 'radio') {
+                updateAnsweredCount();
+            }
+        });
+    </script>
+</body>
+</html> 

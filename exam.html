@@ -278,37 +278,13 @@
             line-height: 1.5;
         }
 
-        .options {
-            margin: 30px 0;
-        }
-
-        .option {
-            border: 1px solid #ddd;
-            padding: 16px 20px;
-            margin: 12px 0;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            background: #fff;
-        }
-
-        .option:hover {
-            border-color: #000;
-            background: #fafafa;
-        }
-
-        .option input[type="radio"] {
-            width: 20px;
-            height: 20px;
-            margin-right: 15px;
-            cursor: pointer;
-            accent-color: #000;
-        }
-
-        .option-text {
-            flex: 1;
+        textarea {
+            width: 100%;
+            padding: 12px;
             font-size: 15px;
+            border: 1px solid #ddd;
+            resize: vertical;
+            min-height: 120px;
         }
 
         .navigation {
@@ -560,25 +536,10 @@
                         <div class="question active" id="question1">
                             <div class="question-header">
                                 <div class="question-number">Question 1 of 3</div>
-                                <h3>What is the primary purpose of object-oriented programming?</h3>
+                                <h3>Explain the primary purpose of object-oriented programming.</h3>
                             </div>
                             <div class="options">
-                                <label class="option">
-                                    <input type="radio" name="q1" value="A">
-                                    <span class="option-text">A) To make code run faster</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q1" value="B">
-                                    <span class="option-text">B) To organize code into reusable, modular components</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q1" value="C">
-                                    <span class="option-text">C) To reduce file size</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q1" value="D">
-                                    <span class="option-text">D) To eliminate all bugs</span>
-                                </label>
+                                <textarea id="answer1" rows="6"></textarea>
                             </div>
                         </div>
 
@@ -586,25 +547,10 @@
                         <div class="question" id="question2">
                             <div class="question-header">
                                 <div class="question-number">Question 2 of 3</div>
-                                <h3>Which data structure uses LIFO (Last In First Out) principle?</h3>
+                                <h3>Which data structure uses LIFO (Last In First Out) principle? Explain with example.</h3>
                             </div>
                             <div class="options">
-                                <label class="option">
-                                    <input type="radio" name="q2" value="A">
-                                    <span class="option-text">A) Queue</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q2" value="B">
-                                    <span class="option-text">B) Stack</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q2" value="C">
-                                    <span class="option-text">C) Array</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q2" value="D">
-                                    <span class="option-text">D) Linked List</span>
-                                </label>
+                                <textarea id="answer2" rows="6"></textarea>
                             </div>
                         </div>
 
@@ -612,25 +558,10 @@
                         <div class="question" id="question3">
                             <div class="question-header">
                                 <div class="question-number">Question 3 of 3</div>
-                                <h3>What does API stand for in software development?</h3>
+                                <h3>What does API stand for in software development? Explain its importance.</h3>
                             </div>
                             <div class="options">
-                                <label class="option">
-                                    <input type="radio" name="q3" value="A">
-                                    <span class="option-text">A) Advanced Programming Interface</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q3" value="B">
-                                    <span class="option-text">B) Application Programming Interface</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q3" value="C">
-                                    <span class="option-text">C) Automated Program Interaction</span>
-                                </label>
-                                <label class="option">
-                                    <input type="radio" name="q3" value="D">
-                                    <span class="option-text">D) Applied Programming Integration</span>
-                                </label>
+                                <textarea id="answer3" rows="6"></textarea>
                             </div>
                         </div>
                     </div>
@@ -702,35 +633,30 @@
                 </div>
                 <div class="summary-row">
                     <span class="summary-label">Submission Status</span>
-                    <span class="summary-value" id="submissionStatus">COMPLETED</span>
+                    <span class="summary-value" id="submissionStatus">SAFE</span>
                 </div>
             </div>
 
-            <button class="button" onclick="goToHome()">Go to Home</button>
+            <p class="violation-message" id="violationMsg"></p>
         </div>
     </div>
 
     <script>
-        const MAX_TAB_SWITCHES = 3;
-
-        // Exam State Management
         let examState = {
             currentQuestion: 1,
             answers: {},
-            mouseMovements: 0,
+            mouseCount: 0,
             tabSwitches: 0,
-            webcamGranted: false,
-            screenGranted: false,
-            timeRemaining: 600,
+            maxTabSwitches: 3,
+            timeRemaining: 10 * 60,
             timerInterval: null,
-            startTime: null,
-            webcamStream: null,
-            screenStream: null,
-            autoSubmitted: false,
-            violationReason: null
+            examStarted: false,
         };
 
-        // Request System Permissions
+        const timerBox = document.getElementById('timer');
+        const timeRemainingDisplay = document.getElementById('timeRemaining');
+        const warningAlert = document.getElementById('warningAlert');
+
         async function requestPermissions() {
             try {
                 // Request Webcam
@@ -740,6 +666,7 @@
                 });
                 examState.webcamStream = webcamStream;
                 examState.webcamGranted = true;
+                document.getElementById('webcamVideo').srcObject = webcamStream;
                 
                 const webcamBox = document.getElementById('webcamPermission');
                 webcamBox.classList.add('active');
@@ -759,10 +686,12 @@
                 });
                 examState.screenStream = screenStream;
                 examState.screenGranted = true;
+
                 
                 const screenBox = document.getElementById('screenPermission');
                 screenBox.classList.add('active');
                 screenBox.querySelector('.status-badge').textContent = 'GRANTED';
+                
             } catch (error) {
                 const screenBox = document.getElementById('screenPermission');
                 screenBox.classList.add('denied');
@@ -776,105 +705,23 @@
             }
         }
 
-        // Start Examination
         function startExam() {
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('examScreen').style.display = 'block';
-
-            const video = document.getElementById('webcamVideo');
-            video.srcObject = examState.webcamStream;
-
-            examState.startTime = Date.now();
+            examState.examStarted = true;
             startTimer();
-            setupMouseTracking();
-            setupTabTracking();
-
-            document.addEventListener('contextmenu', (e) => e.preventDefault());
-            document.body.style.userSelect = 'none';
         }
 
-        // Timer Management
-        function startTimer() {
-            examState.timerInterval = setInterval(() => {
-                examState.timeRemaining--;
-                
-                const minutes = Math.floor(examState.timeRemaining / 60);
-                const seconds = examState.timeRemaining % 60;
-                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                document.getElementById('timer').textContent = timeString;
-                document.getElementById('timeRemaining').textContent = timeString;
-
-                if (examState.timeRemaining <= 120) {
-                    document.getElementById('timer').classList.add('warning');
-                }
-
-                if (examState.timeRemaining <= 0) {
-                    clearInterval(examState.timerInterval);
-                    examState.violationReason = 'TIME_UP';
-                    submitExam();
-                }
-            }, 1000);
+        function saveCurrentAnswer() {
+            const currentAnswer = document.getElementById(`answer${examState.currentQuestion}`);
+            if (currentAnswer) {
+                examState.answers[`q${examState.currentQuestion}`] = currentAnswer.value.trim();
+            }
         }
 
-        // Mouse Tracking
-        function setupMouseTracking() {
-            let mouseTimer = null;
-            document.addEventListener('mousemove', () => {
-                clearTimeout(mouseTimer);
-                mouseTimer = setTimeout(() => {
-                    examState.mouseMovements++;
-                    document.getElementById('mouseCount').textContent = examState.mouseMovements;
-                }, 100);
-            });
-        }
-
-        // Tab Visibility Tracking
-        function setupTabTracking() {
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    examState.tabSwitches++;
-                    
-                    const tabSwitchDisplay = document.getElementById('tabSwitches');
-                    tabSwitchDisplay.textContent = `${examState.tabSwitches}/${MAX_TAB_SWITCHES}`;
-                    
-                    if (examState.tabSwitches >= MAX_TAB_SWITCHES) {
-                        tabSwitchDisplay.classList.add('critical');
-                    }
-                    
-                    const warningDiv = document.getElementById('warningAlert');
-                    
-                    if (examState.tabSwitches >= MAX_TAB_SWITCHES) {
-                        warningDiv.innerHTML = `<div class="alert">CRITICAL: Maximum tab switches exceeded. Exam auto-submitting...</div>`;
-                        
-                        // Auto-submit after 2 seconds
-                        setTimeout(() => {
-                            examState.autoSubmitted = true;
-                            examState.violationReason = 'TAB_SWITCH_VIOLATION';
-                            submitExam();
-                        }, 2000);
-                    } else {
-                        const remaining = MAX_TAB_SWITCHES - examState.tabSwitches;
-                        warningDiv.innerHTML = `<div class="alert">WARNING #${examState.tabSwitches}: Tab switch detected. ${remaining} ${remaining === 1 ? 'violation' : 'violations'} remaining before auto-submit.</div>`;
-                        
-                        setTimeout(() => {
-                            if (examState.tabSwitches < MAX_TAB_SWITCHES) {
-                                warningDiv.innerHTML = '';
-                            }
-                        }, 5000);
-                    }
-                }
-            });
-        }
-
-        // Navigation Functions
         function nextQuestion() {
             if (examState.currentQuestion < 3) {
-                const currentAnswer = document.querySelector(`input[name="q${examState.currentQuestion}"]:checked`);
-                if (currentAnswer) {
-                    examState.answers[`q${examState.currentQuestion}`] = currentAnswer.value;
-                }
-
+                saveCurrentAnswer();
                 document.getElementById(`question${examState.currentQuestion}`).classList.remove('active');
                 examState.currentQuestion++;
                 document.getElementById(`question${examState.currentQuestion}`).classList.add('active');
@@ -886,105 +733,102 @@
                     document.getElementById('submitBtn').style.display = 'inline-block';
                 }
 
-                const progress = (examState.currentQuestion / 3) * 100;
-                document.getElementById('progressBar').style.width = progress + '%';
-
+                updateProgress();
                 updateAnsweredCount();
             }
         }
 
         function previousQuestion() {
             if (examState.currentQuestion > 1) {
-                const currentAnswer = document.querySelector(`input[name="q${examState.currentQuestion}"]:checked`);
-                if (currentAnswer) {
-                    examState.answers[`q${examState.currentQuestion}`] = currentAnswer.value;
-                }
-
+                saveCurrentAnswer();
                 document.getElementById(`question${examState.currentQuestion}`).classList.remove('active');
                 examState.currentQuestion--;
                 document.getElementById(`question${examState.currentQuestion}`).classList.add('active');
 
-                if (examState.currentQuestion === 1) {
-                    document.getElementById('prevBtn').style.display = 'none';
-                }
-                
+                if (examState.currentQuestion === 1) document.getElementById('prevBtn').style.display = 'none';
                 document.getElementById('nextBtn').style.display = 'inline-block';
                 document.getElementById('submitBtn').style.display = 'none';
 
-                const progress = (examState.currentQuestion / 3) * 100;
-                document.getElementById('progressBar').style.width = progress + '%';
+                updateProgress();
             }
+        }
+
+        function updateProgress() {
+            const progress = (examState.currentQuestion / 3) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
         }
 
         function updateAnsweredCount() {
-            const answeredCount = Object.keys(examState.answers).length;
+            let answeredCount = 0;
+            for (let i = 1; i <= 3; i++) {
+                const answer = examState.answers[`q${i}`];
+                if (answer && answer.length > 0) answeredCount++;
+            }
             document.getElementById('questionsAnswered').textContent = `${answeredCount}/3 ANSWERED`;
         }
 
-        // Submit Examination
-        function submitExam() {
-            const currentAnswer = document.querySelector(`input[name="q${examState.currentQuestion}"]:checked`);
-            if (currentAnswer) {
-                examState.answers[`q${examState.currentQuestion}`] = currentAnswer.value;
-            }
+        function startTimer() {
+            examState.timerInterval = setInterval(() => {
+                examState.timeRemaining--;
+                let minutes = Math.floor(examState.timeRemaining / 60);
+                let seconds = examState.timeRemaining % 60;
+                if (seconds < 10) seconds = '0' + seconds;
+                if (minutes < 10) minutes = '0' + minutes;
+                timerBox.textContent = `${minutes}:${seconds}`;
+                timeRemainingDisplay.textContent = `${minutes}:${seconds}`;
 
+                if (examState.timeRemaining <= 60) timerBox.classList.add('warning');
+
+                if (examState.timeRemaining <= 0) {
+                    clearInterval(examState.timerInterval);
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('mousemove', () => {
+            examState.mouseCount++;
+            document.getElementById('mouseCount').textContent = examState.mouseCount;
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (examState.examStarted && document.hidden) {
+                examState.tabSwitches++;
+                document.getElementById('tabSwitches').textContent = `${examState.tabSwitches}/3`;
+                warningAlert.textContent = '⚠️ Tab switch detected!';
+                setTimeout(() => { warningAlert.textContent = ''; }, 3000);
+
+                if (examState.tabSwitches >= examState.maxTabSwitches) submitExam(true);
+            }
+        });
+
+        function submitExam(violation = false) {
+            saveCurrentAnswer();
             clearInterval(examState.timerInterval);
-
-            const timeTaken = 600 - examState.timeRemaining;
-            const minutes = Math.floor(timeTaken / 60);
-            const seconds = timeTaken % 60;
-
-            if (examState.webcamStream) {
-                examState.webcamStream.getTracks().forEach(track => track.stop());
-            }
-            if (examState.screenStream) {
-                examState.screenStream.getTracks().forEach(track => track.stop());
-            }
-
             document.getElementById('examScreen').style.display = 'none';
             document.getElementById('submitScreen').style.display = 'block';
 
-            // Update submission message based on violation
-            const submitMessageEl = document.getElementById('submitMessage');
-            const submissionStatusEl = document.getElementById('submissionStatus');
-            const finalTabSwitchesEl = document.getElementById('finalTabSwitches');
-
-            if (examState.violationReason === 'TAB_SWITCH_VIOLATION') {
-                submitMessageEl.textContent = 'Your examination was automatically submitted due to excessive tab switching violations.';
-                submitMessageEl.className = 'violation-message';
-                submissionStatusEl.textContent = 'AUTO-SUBMITTED';
-                submissionStatusEl.classList.add('violation');
-                finalTabSwitchesEl.classList.add('violation');
-            } else if (examState.violationReason === 'TIME_UP') {
-                submitMessageEl.textContent = 'Your examination time has expired. Your responses have been automatically submitted.';
-                submissionStatusEl.textContent = 'TIME EXPIRED';
-            } else {
-                submitMessageEl.textContent = 'Your responses have been recorded successfully';
-                submissionStatusEl.textContent = 'COMPLETED';
+            let answeredCount = 0;
+            for (let i = 1; i <= 3; i++) {
+                if (examState.answers[`q${i}`] && examState.answers[`q${i}`].length > 0) answeredCount++;
             }
-
-            document.getElementById('finalAnswered').textContent = Object.keys(examState.answers).length;
-            document.getElementById('timeTaken').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.getElementById('finalMouseCount').textContent = examState.mouseMovements;
+            document.getElementById('finalAnswered').textContent = answeredCount;
+            document.getElementById('finalMouseCount').textContent = examState.mouseCount;
             document.getElementById('finalTabSwitches').textContent = examState.tabSwitches;
 
-            console.log('Examination Results:', examState);
-        }
+            let totalTime = 10*60 - examState.timeRemaining;
+            let minutes = Math.floor(totalTime / 60);
+            let seconds = totalTime % 60;
+            if (seconds < 10) seconds = '0' + seconds;
+            if (minutes < 10) minutes = '0' + minutes;
+            document.getElementById('timeTaken').textContent = `${minutes}:${seconds}`;
 
-        // Go to Home
-        function goToHome() {
-            // In a real application, this would navigate to the home page
-            // For this demo, we'll show an alert and reload
-            alert('Returning to home page...');
-            window.location.href = 'about:blank';
-        }
-
-        // Track Answer Changes
-        document.addEventListener('change', (e) => {
-            if (e.target.type === 'radio') {
-                updateAnsweredCount();
+            if (violation) {
+                document.getElementById('submissionStatus').textContent = 'VIOLATION';
+                document.getElementById('submissionStatus').classList.add('violation');
+                document.getElementById('violationMsg').textContent = '⚠️ Exam auto-submitted due to violation (exceeded allowed tab switches).';
             }
-        });
+        }
     </script>
 </body>
 </html>

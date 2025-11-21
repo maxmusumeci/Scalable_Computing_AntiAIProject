@@ -182,6 +182,15 @@
             font-size: 15px;
         }
 
+        .notice-box.critical {
+            border-color: #d00;
+            background: #fff0f0;
+        }
+
+        .notice-box.critical strong {
+            color: #d00;
+        }
+
         /* Exam Screen */
         .exam-screen {
             display: none;
@@ -370,16 +379,21 @@
             font-family: 'Courier New', monospace;
         }
 
+        .stat-value.critical {
+            color: #d00;
+        }
+
         .alert-box {
             margin-top: 15px;
         }
 
         .alert {
-            border: 2px solid #000;
-            background: #fff;
+            border: 2px solid #d00;
+            background: #fff0f0;
             padding: 12px 15px;
             font-size: 13px;
             font-weight: 600;
+            color: #d00;
         }
 
         /* Submit Screen */
@@ -403,6 +417,13 @@
             color: #666;
             margin-bottom: 40px;
             font-size: 15px;
+        }
+
+        .submit-screen .violation-message {
+            color: #d00;
+            margin-bottom: 40px;
+            font-size: 15px;
+            font-weight: 600;
         }
 
         .summary-table {
@@ -431,6 +452,10 @@
             font-weight: 700;
             font-family: 'Courier New', monospace;
             font-size: 14px;
+        }
+
+        .summary-value.violation {
+            color: #d00;
         }
 
         @media (max-width: 1024px) {
@@ -508,6 +533,11 @@
             <div class="notice-box">
                 <strong>IMPORTANT INSTRUCTIONS:</strong>
                 Do not switch tabs, minimize browser, or leave the examination window. All activities are monitored and recorded. Any violation may result in automatic submission or disqualification.
+            </div>
+
+            <div class="notice-box critical">
+                <strong>⚠️ VIOLATION POLICY:</strong>
+                The examination will be automatically submitted after 3 tab switches. Your current session will be terminated immediately.
             </div>
         </div>
 
@@ -627,7 +657,7 @@
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">Tab Switches</span>
-                            <span class="stat-value" id="tabSwitches">0</span>
+                            <span class="stat-value" id="tabSwitches">0/3</span>
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">Time Remaining</span>
@@ -647,7 +677,7 @@
         <!-- Submit Screen -->
         <div class="submit-screen" id="submitScreen">
             <h2>Examination Submitted</h2>
-            <p class="message">Your responses have been recorded successfully</p>
+            <p class="message" id="submitMessage">Your responses have been recorded successfully</p>
 
             <div class="summary-table">
                 <div class="summary-row">
@@ -672,15 +702,17 @@
                 </div>
                 <div class="summary-row">
                     <span class="summary-label">Submission Status</span>
-                    <span class="summary-value">COMPLETED</span>
+                    <span class="summary-value" id="submissionStatus">COMPLETED</span>
                 </div>
             </div>
 
-            <button class="button" onclick="window.location.reload()">New Examination</button>
+            <button class="button" onclick="goToHome()">Go to Home</button>
         </div>
     </div>
 
     <script>
+        const MAX_TAB_SWITCHES = 3;
+
         // Exam State Management
         let examState = {
             currentQuestion: 1,
@@ -693,7 +725,9 @@
             timerInterval: null,
             startTime: null,
             webcamStream: null,
-            screenStream: null
+            screenStream: null,
+            autoSubmitted: false,
+            violationReason: null
         };
 
         // Request System Permissions
@@ -777,6 +811,7 @@
 
                 if (examState.timeRemaining <= 0) {
                     clearInterval(examState.timerInterval);
+                    examState.violationReason = 'TIME_UP';
                     submitExam();
                 }
             }, 1000);
@@ -799,14 +834,35 @@
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     examState.tabSwitches++;
-                    document.getElementById('tabSwitches').textContent = examState.tabSwitches;
+                    
+                    const tabSwitchDisplay = document.getElementById('tabSwitches');
+                    tabSwitchDisplay.textContent = `${examState.tabSwitches}/${MAX_TAB_SWITCHES}`;
+                    
+                    if (examState.tabSwitches >= MAX_TAB_SWITCHES) {
+                        tabSwitchDisplay.classList.add('critical');
+                    }
                     
                     const warningDiv = document.getElementById('warningAlert');
-                    warningDiv.innerHTML = `<div class="alert">WARNING #${examState.tabSwitches}: Tab switch detected</div>`;
                     
-                    setTimeout(() => {
-                        warningDiv.innerHTML = '';
-                    }, 5000);
+                    if (examState.tabSwitches >= MAX_TAB_SWITCHES) {
+                        warningDiv.innerHTML = `<div class="alert">CRITICAL: Maximum tab switches exceeded. Exam auto-submitting...</div>`;
+                        
+                        // Auto-submit after 2 seconds
+                        setTimeout(() => {
+                            examState.autoSubmitted = true;
+                            examState.violationReason = 'TAB_SWITCH_VIOLATION';
+                            submitExam();
+                        }, 2000);
+                    } else {
+                        const remaining = MAX_TAB_SWITCHES - examState.tabSwitches;
+                        warningDiv.innerHTML = `<div class="alert">WARNING #${examState.tabSwitches}: Tab switch detected. ${remaining} ${remaining === 1 ? 'violation' : 'violations'} remaining before auto-submit.</div>`;
+                        
+                        setTimeout(() => {
+                            if (examState.tabSwitches < MAX_TAB_SWITCHES) {
+                                warningDiv.innerHTML = '';
+                            }
+                        }, 5000);
+                    }
                 }
             });
         }
@@ -888,12 +944,39 @@
             document.getElementById('examScreen').style.display = 'none';
             document.getElementById('submitScreen').style.display = 'block';
 
+            // Update submission message based on violation
+            const submitMessageEl = document.getElementById('submitMessage');
+            const submissionStatusEl = document.getElementById('submissionStatus');
+            const finalTabSwitchesEl = document.getElementById('finalTabSwitches');
+
+            if (examState.violationReason === 'TAB_SWITCH_VIOLATION') {
+                submitMessageEl.textContent = 'Your examination was automatically submitted due to excessive tab switching violations.';
+                submitMessageEl.className = 'violation-message';
+                submissionStatusEl.textContent = 'AUTO-SUBMITTED';
+                submissionStatusEl.classList.add('violation');
+                finalTabSwitchesEl.classList.add('violation');
+            } else if (examState.violationReason === 'TIME_UP') {
+                submitMessageEl.textContent = 'Your examination time has expired. Your responses have been automatically submitted.';
+                submissionStatusEl.textContent = 'TIME EXPIRED';
+            } else {
+                submitMessageEl.textContent = 'Your responses have been recorded successfully';
+                submissionStatusEl.textContent = 'COMPLETED';
+            }
+
             document.getElementById('finalAnswered').textContent = Object.keys(examState.answers).length;
             document.getElementById('timeTaken').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             document.getElementById('finalMouseCount').textContent = examState.mouseMovements;
             document.getElementById('finalTabSwitches').textContent = examState.tabSwitches;
 
             console.log('Examination Results:', examState);
+        }
+
+        // Go to Home
+        function goToHome() {
+            // In a real application, this would navigate to the home page
+            // For this demo, we'll show an alert and reload
+            alert('Returning to home page...');
+            window.location.href = 'about:blank';
         }
 
         // Track Answer Changes
@@ -904,4 +987,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

@@ -19,9 +19,9 @@
             padding: 15px;
             background: #f8f9fa;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        
+
         .progress-text {
             text-align: center;
             font-size: 14px;
@@ -29,7 +29,7 @@
             color: #333;
             margin-bottom: 10px;
         }
-        
+
         .progress-bar-container {
             width: 100%;
             height: 24px;
@@ -38,7 +38,7 @@
             overflow: hidden;
             position: relative;
         }
-        
+
         .progress-bar-fill {
             height: 100%;
             background: linear-gradient(90deg, #4CAF50, #8BC34A);
@@ -52,12 +52,12 @@
             font-weight: 700;
             color: white;
         }
-        
+
         .verified {
             background: #4CAF50 !important;
             color: white !important;
         }
-        
+
         .verification-info {
             text-align: center;
             margin: 20px 0;
@@ -66,13 +66,13 @@
             border-radius: 8px;
             border-left: 4px solid #2196F3;
         }
-        
+
         .verification-info p {
             margin: 5px 0;
             font-size: 14px;
             color: #1976D2;
         }
-        
+
         .verification-info strong {
             color: #0D47A1;
         }
@@ -120,9 +120,12 @@
         <div class="modal-container">
             <!-- Modal Header -->
             <div class="modal-header">
-                <button class="modal-refresh-btn" id="refreshBtn" aria-label="Refresh verification">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
+                <div class="refresh-group">
+                    <button class="modal-refresh-btn" id="refreshBtn" aria-label="Refresh verification">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <span class="refresh-text">Refresh</span>
+                </div>
                 <h3>Grid Match Verification</h3>
                 <button class="modal-close-btn" id="closeBtn" aria-label="Close modal">
                     <i class="fas fa-times"></i>

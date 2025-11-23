@@ -803,6 +803,9 @@
             keystrokeTimestamps: [],
             webcamActive: false,
             screenShareActive: false,
+            serverUrl: "https://exam-portal-captcha-test.web.app",
+            eyeTrackingActive: false,
+            attentionViolations: 0
         };
 
         const timerBox = document.getElementById('timer');
@@ -1003,6 +1006,19 @@
             });
         }
 
+        function setupEyeTrackingCanvas() {
+            const webcamContainer = document.querySelector('.webcam-container');
+            const canvas = document.createElement('canvas');
+            canvas.id = 'eyeTrackingCanvas';
+            canvas.className = 'webcam-feed';
+            canvas.style.position = 'absolute';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.pointerEvents = 'none';
+            webcamContainer.style.position = 'relative';
+            webcamContainer.appendChild(canvas);
+        }
+
         async function requestPermissions() {
             let fraudReasons = [];
             let permissionsGranted = 0;
@@ -1075,13 +1091,119 @@
             document.getElementById('startExamBtn').disabled = false;
         }
 
-        function startExam() {
+        function addAttentionMonitoring(){
+            const statsDiv = document.querySelector('.monitoring-stats');
+            const attentionRow = document.createElement('div');
+
+            attentionRow.className = 'stat-row';
+            attentionRow.innerHTML = `
+                    <span class="stat-label">Attention Violations</span>
+                    <span class="stat-value" id="attentionViolations">0/5</span>
+                `;
+
+            statsDiv.insertBefore(attentionRow, statsDiv.firstChild);
+        }
+
+        async function startExam() {
             // Start exam immediately - webcam monitoring disabled
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('examScreen').style.display = 'block';
+            const video = document.getElementById('webcamVideo');
+            video.srcObject = examState.webcamStream;
+
+            setupEyeTrackingCanvas();
+            addAttentionMonitoring();
+
+            try {
+                await fetch(`${examState.serverUrl}/reset_tracking`, {
+                    method: 'POST'
+                });
+            } catch (error) {
+                console.error("Failed to reset tracking", error);
+            }
+
+            video.onloadedmetadata = () => {
+                video.play().then(() => {
+                    console.log('Video is playing, starting eye tracking...');
+                    examState.eyeTrackingActive = true;
+                    
+                    setTimeout(() => {
+                        console.log('Calling processEyeTracking...');
+                        processEyeTracking();
+                    }, 500);
+                });
+            };
+
             examState.examStarted = true;
             startTimer();
             document.addEventListener('keydown', trackKeystrokes);
+        }
+
+        async function processEyeTracking() {
+            if (!examState.eyeTrackingActive) return;
+
+            const video = document.getElementById('webcamVideo');
+            const canvas = document.getElementById('eyeTrackingCanvas')
+            
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+
+            const tempCanvas = document.createElement('canvas');
+
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+
+            const tempCtx = tempCanvas.getContext('2d');
+
+            tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+            const imageData = tempCanvas.toDataURL('image/jpeg', 0.8);
+
+            try {
+                const response = await fetch(`${examState.serverUrl}/process_frame`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({image: imageData})
+                });
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    const tracking = data.tracking;
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    };
+                    img.src = data.image;
+
+                    examState.attentionViolations = tracking.violation_count;
+                    document.getElementById('attentionViolations').textContent = `${tracking.violation_count}/${tracking.max_violations}`;
+
+                    const warningDiv = document.getElementById('warningAlert');
+                    if (tracking.warning_message) {
+                        warningDiv.innerHTML = `<div class="alert">${tracking.warning_message}</div>`;
+                    } else if (tracking.frame_valid) {
+                        warningDiv.innerHTML = '';
+                    }
+
+                    if (tracking.should_terminate) {
+                        console.log("Exam auto-terminated due to attention violations");
+                        alert("Examination terminated: Too many instances of looking away, or face not being detected");
+                        submitExam();
+                        return;
+                    }
+                }
+
+            } catch (error) {
+                console.error("Eye tracking error", error);
+            }
+
+            setTimeout(processEyeTracking, 100);
         }
 
         function trackKeystrokes(event) {
@@ -1255,6 +1377,8 @@
             document.removeEventListener('keydown', trackKeystrokes);
             document.getElementById('examScreen').style.display = 'none';
             document.getElementById('submitScreen').style.display = 'block';
+
+            examState.eyeTrackingActive = false;
 
             let answeredCount = 0;
             for (let i = 1; i <= 3; i++) {

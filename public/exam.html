@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Examination System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #000;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #000;
+            color: #fff;
+            padding: 20px 0;
+            border-bottom: 3px solid #333;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .timer-box {
+            background: #fff;
+            color: #000;
+            padding: 12px 24px;
+            border: 2px solid #000;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-box.warning {
+            background: #000;
+            color: #fff;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.5; }
+        }
+
+        .setup-screen {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 60px;
+            max-width: 800px;
+            margin: 50px auto;
+        }
+
+        .setup-screen h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .setup-screen .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 15px;
+        }
+
+        .permission-box {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+        }
+
+        .permission-box.active {
+            border-color: #000;
+            border-width: 2px;
+            background: #fff;
+        }
+
+        .permission-box.denied {
+            background: #f9f9f9;
+            opacity: 0.7;
+        }
+
+        .permission-info h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .permission-info p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .status-badge {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .button {
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .button:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .button:disabled {
+            background: #e0e0e0;
+            border-color: #e0e0e0;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .button:disabled:hover {
+            background: #e0e0e0;
+            color: #999;
+        }
+
+        .button.secondary {
+            background: #fff;
+            color: #000;
+        }
+
+        .button.secondary:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .notice-box {
+            border: 2px solid #000;
+            background: #fff;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+
+        .notice-box strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .notice-box.critical {
+            border-color: #d00;
+            background: #fff0f0;
+        }
+
+        .notice-box.critical strong {
+            color: #d00;
+        }
+
+        .exam-screen {
+            display: none;
+        }
+
+        .exam-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .question-area {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 40px;
+        }
+
+        .exam-info {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exam-info span {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .progress-indicator {
+            height: 4px;
+            background: #e0e0e0;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #000;
+            width: 33.33%;
+            transition: width 0.3s;
+        }
+
+        .question-container {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .question {
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .question.active {
+            opacity: 1;
+            visibility: visible;
+            position: relative;
+        }
+
+        .question-header {
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .question h3 {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            border: 1px solid #ddd;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .navigation {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .monitoring-panel {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .monitoring-panel h3 {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .webcam-container {
+            border: 2px solid #000;
+            margin-bottom: 20px;
+            background: #000;
+            position: relative;
+        }
+
+        .webcam-feed {
+            width: 100%;
+            height: 220px;
+            display: block;
+            object-fit: cover;
+        }
+
+        .webcam-status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-weight: 700;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .monitoring-stats {
+            border: 1px solid #ddd;
+            background: #fafafa;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat-value.critical {
+            color: #d00;
+        }
+
+        .alert-box {
+            margin-top: 15px;
+        }
+
+        .alert {
+            border: 2px solid #d00;
+            background: #fff0f0;
+            padding: 12px 15px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #d00;
+        }
+
+        .submit-screen {
+            display: none;
+            background: #fff;
+            border: 2px solid #000;
+            padding: 60px;
+            max-width: 900px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .submit-screen h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .submit-screen .message {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 15px;
+        }
+
+        .submit-screen .violation-message {
+            color: #d00;
+            margin-bottom: 40px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .ai-detection-box {
+            border: 2px solid #ff6b00;
+            background: #fff8f0;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .ai-detection-box h4 {
+            color: #ff6b00;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .ai-indicator {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #ffe0cc;
+            font-size: 13px;
+        }
+
+        .ai-indicator:last-child {
+            border-bottom: none;
+        }
+
+        .ai-indicator-label {
+            color: #666;
+        }
+
+        .ai-indicator-value {
+            font-weight: 700;
+        }
+
+        .ai-indicator-value.high {
+            color: #d00;
+        }
+
+        .ai-indicator-value.medium {
+            color: #ff6b00;
+        }
+
+        .ai-indicator-value.low {
+            color: #0a9d0a;
+        }
+
+        .summary-table {
+            border: 1px solid #ddd;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .summary-value.violation {
+            color: #d00;
+        }
+
+        .fraud-screen {
+            display: none;
+            background: #fff;
+            border: 2px solid #d00;
+            padding: 60px;
+            max-width: 800px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .fraud-screen h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            color: #d00;
+        }
+
+        .fraud-screen .fraud-message {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .fraud-reasons {
+            background: #fff0f0;
+            border: 1px solid #d00;
+            padding: 20px;
+            text-align: left;
+            margin: 30px 0;
+            border-radius: 4px;
+        }
+
+        .fraud-reasons h4 {
+            color: #d00;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .fraud-reasons ul {
+            list-style: none;
+        }
+
+        .fraud-reasons li {
+            padding: 8px 0;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .fraud-reasons li:before {
+            content: "✗ ";
+            color: #d00;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .exam-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .monitoring-panel {
+                position: relative;
+                top: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .setup-screen,
+            .submit-screen,
+            .fraud-screen {
+                padding: 30px;
+            }
+
+            .question-area {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>ONLINE EXAMINATION SYSTEM</h1>
+            <div class="timer-box" id="timer">10:00</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="setup-screen" id="setupScreen">
+            <h2>System Permissions Required</h2>
+            <p class="subtitle">The following permissions are mandatory to proceed with the examination</p>
+
+            <div class="permission-box" id="webcamPermission">
+                <div class="permission-info">
+                    <h4>Camera Access</h4>
+                    <p>Required for candidate verification and monitoring</p>
+                </div>
+                <span class="status-badge">PENDING</span>
+            </div>
+
+            <div class="permission-box" id="screenPermission">
+                <div class="permission-info">
+                    <h4>Screen Sharing</h4>
+                    <p>Required for activity monitoring during examination</p>
+                </div>
+                <span class="status-badge">PENDING</span>
+            </div>
+
+            <div class="permission-box active">
+                <div class="permission-info">
+                    <h4>Mouse Tracking</h4>
+                    <p>Automatically enabled for behavior analysis</p>
+                </div>
+                <span class="status-badge">ACTIVE</span>
+            </div>
+
+            <div style="margin-top: 40px; text-align: center;">
+                <button class="button" onclick="requestPermissions()">Grant Permissions</button>
+                <button class="button" id="startExamBtn" onclick="startExam()" disabled>Start Examination</button>
+            </div>
+
+            <div class="notice-box">
+                <strong>IMPORTANT INSTRUCTIONS:</strong>
+                Do not switch tabs, minimize browser, or leave the examination window. All activities are monitored and recorded. Any violation may result in automatic submission or disqualification.
+            </div>
+
+            <div class="notice-box critical">
+                <strong>⚠️ VIOLATION POLICY:</strong>
+                The examination will be automatically submitted after 3 tab switches. Your current session will be terminated immediately.
+            </div>
+        </div>
+
+        <div class="exam-screen" id="examScreen">
+            <div class="exam-layout">
+                <div class="question-area">
+                    <div class="exam-info">
+                        <span>EXAMINATION IN PROGRESS</span>
+                        <span id="questionsAnswered">0/3 ANSWERED</span>
+                    </div>
+
+                    <div class="progress-indicator">
+                        <div class="progress-fill" id="progressBar"></div>
+                    </div>
+
+                    <div class="question-container">
+                        <div class="question active" id="question1">
+                            <div class="question-header">
+                                <div class="question-number">Question 1 of 3</div>
+                                <h3>Explain the primary purpose of object-oriented programming.</h3>
+                            </div>
+                            <div class="options">
+                                <textarea id="answer1" rows="6"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="question" id="question2">
+                            <div class="question-header">
+                                <div class="question-number">Question 2 of 3</div>
+                                <h3>Which data structure uses LIFO (Last In First Out) principle? Explain with example.</h3>
+                            </div>
+                            <div class="options">
+                                <textarea id="answer2" rows="6"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="question" id="question3">
+                            <div class="question-header">
+                                <div class="question-number">Question 3 of 3</div>
+                                <h3>What does API stand for in software development? Explain its importance.</h3>
+                            </div>
+                            <div class="options">
+                                <textarea id="answer3" rows="6"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation">
+                        <button class="button secondary" id="prevBtn" onclick="previousQuestion()" style="display: none;">← Previous</button>
+                        <button class="button" id="nextBtn" onclick="nextQuestion()">Next →</button>
+                        <button class="button" id="submitBtn" onclick="submitExam()" style="display: none;">Submit Exam</button>
+                    </div>
+                </div>
+
+                <div class="monitoring-panel">
+                    <h3>Monitoring</h3>
+                    
+                    <div class="webcam-container">
+                        <video id="webcamVideo" class="webcam-feed" autoplay muted playsinline></video>
+                        <div class="webcam-status" id="webcamStatus"></div>
+                    </div>
+
+                    <div class="monitoring-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Webcam Status</span>
+                            <span class="stat-value" id="webcamStatValue">Checking...</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Screen Share Status</span>
+                            <span class="stat-value" id="screenShareStatus">Checking...</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Mouse Movements</span>
+                            <span class="stat-value" id="mouseCount">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Tab Switches</span>
+                            <span class="stat-value" id="tabSwitches">0/3</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Time Remaining</span>
+                            <span class="stat-value" id="timeRemaining">10:00</span>
+                        </div>
+                    </div>
+
+                    <div class="alert-box" id="warningAlert"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fraud-screen" id="fraudScreen">
+            <h2>EXAMINATION TERMINATED</h2>
+            <p class="fraud-message">Your examination session has been terminated due to security violations detected by our anti-cheating system.</p>
+            
+            <div class="fraud-reasons">
+                <h4>Reasons for Termination:</h4>
+                <ul id="fraudReasons"></ul>
+            </div>
+
+            <p class="fraud-message">This submission has been flagged and will be reviewed by the examination board. Any attempt to bypass security measures may result in disciplinary action.</p>
+        </div>
+
+        <div class="submit-screen" id="submitScreen">
+            <h2>Examination Submitted</h2>
+            <p class="message" id="submitMessage">Your responses have been recorded successfully</p>
+
+            <div class="summary-table">
+                <div class="summary-row">
+                    <span class="summary-label">Total Questions</span>
+                    <span class="summary-value">3</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Questions Answered</span>
+                    <span class="summary-value" id="finalAnswered">0</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Time Taken</span>
+                    <span class="summary-value" id="timeTaken">00:00</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Mouse Movements Detected</span>
+                    <span class="summary-value" id="finalMouseCount">0</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Tab Switches Detected</span>
+                    <span class="summary-value" id="finalTabSwitches">0</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Submission Status</span>
+                    <span class="summary-value" id="submissionStatus">SAFE</span>
+                </div>
+            </div>
+
+            <div class="ai-detection-box" id="aiDetectionBox">
+                <h4>⚠️ AI Detection Analysis</h4>
+                <div class="ai-indicator">
+                    <span class="ai-indicator-label">Average Word Length</span>
+                    <span class="ai-indicator-value" id="aiWordLength">-</span>
+                </div>
+                <div class="ai-indicator">
+                    <span class="ai-indicator-label">Formal Language Score</span>
+                    <span class="ai-indicator-value" id="aiFormalityScore">-</span>
+                </div>
+                <div class="ai-indicator">
+                    <span class="ai-indicator-label">Sentence Uniformity</span>
+                    <span class="ai-indicator-value" id="aiSentenceUniformity">-</span>
+                </div>
+                <div class="ai-indicator">
+                    <span class="ai-indicator-label">Keystroke Patterns</span>
+                    <span class="ai-indicator-value" id="aiKeystrokePattern">-</span>
+                </div>
+                <div class="ai-indicator">
+                    <span class="ai-indicator-label">Time-to-Answer Ratio</span>
+                    <span class="ai-indicator-value" id="aiTimeRatio">-</span>
+                </div>
+                <div class="ai-indicator">
+                    <span class="ai-indicator-label">Overall AI Probability</span>
+                    <span class="ai-indicator-value" id="aiOverall">0%</span>
+                </div>
+            </div>
+
+            <p class="violation-message" id="violationMsg"></p>
+        </div>
+    </div>
+
+    <script>
+        let examState = {
+            currentQuestion: 1,
+            answers: {},
+            answerMetrics: {},
+            mouseCount: 0,
+            tabSwitches: 0,
+            maxTabSwitches: 3,
+            timeRemaining: 10 * 60,
+            timerInterval: null,
+            examStarted: false,
+            keystrokes: [],
+            keystrokeTimestamps: [],
+            webcamActive: false,
+            screenShareActive: false,
+        };
+
+        const timerBox = document.getElementById('timer');
+        const timeRemainingDisplay = document.getElementById('timeRemaining');
+        const warningAlert = document.getElementById('warningAlert');
+
+        function analyzeAnswerForAI(text) {
+            if (!text || text.length < 10) return null;
+
+            const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            
+            const metrics = {
+                wordCount: words.length,
+                avgWordLength: words.reduce((sum, w) => sum + w.length, 0) / words.length,
+                sentenceCount: Math.max(sentences.length, 1),
+                avgSentenceLength: words.length / Math.max(sentences.length, 1),
+                uniqueWordRatio: new Set(words.map(w => w.toLowerCase())).size / words.length,
+                formalWords: 0,
+                sentenceLengthVariance: 0,
+                capitalLetterRatio: (text.match(/[A-Z]/g) || []).length / text.length,
+                commaCount: (text.match(/,/g) || []).length,
+                colonCount: (text.match(/:/g) || []).length,
+                complexWords: 0,
+            };
+
+            // Expanded formal/AI-like words and phrases
+            const formalWords = [
+                'furthermore', 'moreover', 'thus', 'thereby', 'consequently', 'therefore', 
+                'however', 'nevertheless', 'additionally', 'specifically', 'essentially',
+                'particularly', 'significantly', 'notably', 'primarily', 'fundamentally',
+                'comprehensive', 'facilitate', 'utilize', 'implement', 'demonstrate',
+                'emphasize', 'illustrate', 'exemplify', 'encompass', 'inherent',
+                'paradigm', 'leverage', 'optimal', 'robust', 'intrinsic', 'enables'
+            ];
+            
+            metrics.formalWords = words.filter(w => formalWords.includes(w.toLowerCase())).length;
+            metrics.complexWords = words.filter(w => w.length > 8).length;
+
+            const sentenceLengths = sentences.map(s => s.trim().split(/\s+/).length);
+            if (sentenceLengths.length > 1) {
+                const avgLen = sentenceLengths.reduce((a, b) => a + b, 0) / sentenceLengths.length;
+                metrics.sentenceLengthVariance = Math.sqrt(sentenceLengths.reduce((sum, len) => sum + Math.pow(len - avgLen, 2), 0) / sentenceLengths.length);
+            } else {
+                metrics.sentenceLengthVariance = 0;
+            }
+
+            return metrics;
+        }
+
+        function detectAI() {
+            let details = {
+                wordLength: 0,
+                formality: 0,
+                uniformity: 0,
+                keystrokePattern: 0,
+                timeRatio: 0,
+            };
+
+            let validAnswers = 0;
+
+            for (let i = 1; i <= 3; i++) {
+                const answer = examState.answers[`q${i}`];
+                if (!answer || answer.length < 10) continue;
+
+                const metrics = analyzeAnswerForAI(answer);
+                if (!metrics) continue;
+
+                validAnswers++;
+
+                // Word Length Analysis (AI uses longer, more complex words)
+                if (metrics.avgWordLength > 5.8) details.wordLength += 60;
+                else if (metrics.avgWordLength > 5.3) details.wordLength += 40;
+                else if (metrics.avgWordLength > 4.8) details.wordLength += 20;
+
+                // Complex words ratio
+                const complexRatio = metrics.complexWords / metrics.wordCount;
+                if (complexRatio > 0.25) details.wordLength += 30;
+                else if (complexRatio > 0.15) details.wordLength += 15;
+
+                // Formality Analysis (AI tends to use formal language)
+                const formalityRatio = metrics.formalWords / metrics.wordCount;
+                if (formalityRatio > 0.08) details.formality += 70;
+                else if (formalityRatio > 0.05) details.formality += 45;
+                else if (formalityRatio > 0.03) details.formality += 25;
+
+                // Unique word ratio (AI sometimes has high vocabulary diversity)
+                if (metrics.uniqueWordRatio > 0.85) details.formality += 20;
+                else if (metrics.uniqueWordRatio > 0.75) details.formality += 10;
+
+                // Sentence Uniformity (AI produces very consistent sentence lengths)
+                if (metrics.sentenceLengthVariance < 2.5) details.uniformity += 70;
+                else if (metrics.sentenceLengthVariance < 4) details.uniformity += 45;
+                else if (metrics.sentenceLengthVariance < 6) details.uniformity += 25;
+
+                // Average sentence length (AI tends toward moderate, consistent length)
+                if (metrics.avgSentenceLength > 15 && metrics.avgSentenceLength < 25) {
+                    details.uniformity += 20;
+                }
+
+                // Punctuation patterns (AI uses more structured punctuation)
+                const punctuationRatio = (metrics.commaCount + metrics.colonCount) / metrics.sentenceCount;
+                if (punctuationRatio > 2) details.formality += 15;
+
+                // Time-to-answer ratio
+                const metric = examState.answerMetrics[`q${i}`];
+                if (metric && metric.timeSpent && metric.timeSpent > 0) {
+                    const wordsPerSecond = metrics.wordCount / metric.timeSpent;
+                    
+                    // Too fast suggests copy-paste
+                    if (wordsPerSecond > 3) details.timeRatio += 80;
+                    else if (wordsPerSecond > 2) details.timeRatio += 55;
+                    else if (wordsPerSecond > 1.2) details.timeRatio += 30;
+                    
+                    // Check keystroke efficiency
+                    if (metric.keystrokeCount > 0) {
+                        const keystrokesPerWord = metric.keystrokeCount / metrics.wordCount;
+                        // Normal typing is ~5-7 keystrokes per word, copy-paste is much lower
+                        if (keystrokesPerWord < 3) details.timeRatio += 40;
+                        else if (keystrokesPerWord < 4) details.timeRatio += 20;
+                    }
+                }
+            }
+
+            if (validAnswers === 0) {
+                return { score: 0, details: details };
+            }
+
+            // Keystroke Pattern Analysis (across all answers)
+            if (examState.keystrokeTimestamps.length > 20) {
+                const gaps = [];
+                for (let i = 1; i < examState.keystrokeTimestamps.length; i++) {
+                    gaps.push(examState.keystrokeTimestamps[i] - examState.keystrokeTimestamps[i-1]);
+                }
+                
+                const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+                const gapVariance = Math.sqrt(gaps.reduce((sum, g) => sum + Math.pow(g - avgGap, 2), 0) / gaps.length);
+                
+                // Very uniform keystroke timing suggests automation/paste
+                if (gapVariance < 15) details.keystrokePattern = 85;
+                else if (gapVariance < 30) details.keystrokePattern = 60;
+                else if (gapVariance < 50) details.keystrokePattern = 35;
+                
+                // Check for suspiciously fast typing bursts
+                const fastGaps = gaps.filter(g => g < 50).length;
+                const fastRatio = fastGaps / gaps.length;
+                if (fastRatio > 0.7) details.keystrokePattern += 30;
+                else if (fastRatio > 0.5) details.keystrokePattern += 15;
+            } else if (examState.keystrokeTimestamps.length < 10) {
+                // Very few keystrokes for the amount of text = likely copy-paste
+                let totalWords = 0;
+                for (let i = 1; i <= 3; i++) {
+                    const answer = examState.answers[`q${i}`];
+                    if (answer) {
+                        totalWords += answer.split(/\s+/).filter(w => w.length > 0).length;
+                    }
+                }
+                if (totalWords > 50) details.keystrokePattern = 90;
+                else if (totalWords > 30) details.keystrokePattern = 60;
+            }
+
+            // Average across all answers
+            const avgDetails = {
+                wordLength: Math.min(details.wordLength / validAnswers, 100),
+                formality: Math.min(details.formality / validAnswers, 100),
+                uniformity: Math.min(details.uniformity / validAnswers, 100),
+                keystrokePattern: Math.min(details.keystrokePattern, 100),
+                timeRatio: Math.min(details.timeRatio / validAnswers, 100),
+            };
+
+            // Weighted scoring - keystroke and time patterns are most reliable
+            const totalScore = (
+                avgDetails.wordLength * 0.15 +
+                avgDetails.formality * 0.20 +
+                avgDetails.uniformity * 0.15 +
+                avgDetails.keystrokePattern * 0.30 +
+                avgDetails.timeRatio * 0.20
+            );
+
+            return {
+                score: Math.min(totalScore, 100),
+                details: avgDetails,
+            };
+        }
+
+        function terminateExamForFraud(reasons) {
+            clearInterval(examState.timerInterval);
+            document.removeEventListener('keydown', trackKeystrokes);
+            document.getElementById('examScreen').style.display = 'none';
+            document.getElementById('fraudScreen').style.display = 'block';
+            
+            const fraudReasonsList = document.getElementById('fraudReasons');
+            fraudReasonsList.innerHTML = '';
+            reasons.forEach(reason => {
+                const li = document.createElement('li');
+                li.textContent = reason;
+                fraudReasonsList.appendChild(li);
+            });
+        }
+
+        async function requestPermissions() {
+            let fraudReasons = [];
+            let permissionsGranted = 0;
+
+            try {
+                const webcamStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 640 }, height: { ideal: 480 } }, 
+                    audio: false 
+                });
+                examState.webcamStream = webcamStream;
+                examState.webcamGranted = true;
+                
+                const videoElement = document.getElementById('webcamVideo');
+                videoElement.srcObject = webcamStream;
+                
+                videoElement.onloadedmetadata = () => {
+                    videoElement.play().then(() => {
+                        examState.webcamActive = true;
+                        document.getElementById('webcamStatValue').textContent = 'Active';
+                        console.log('Webcam initialized successfully');
+                    }).catch(err => {
+                        console.error('Error playing video:', err);
+                    });
+                };
+                
+                const webcamBox = document.getElementById('webcamPermission');
+                webcamBox.classList.add('active');
+                webcamBox.querySelector('.status-badge').textContent = 'GRANTED';
+                permissionsGranted++;
+
+            } catch (error) {
+                console.error('Webcam error:', error);
+                const webcamBox = document.getElementById('webcamPermission');
+                webcamBox.classList.add('denied');
+                webcamBox.querySelector('.status-badge').textContent = 'DENIED';
+                fraudReasons.push('Camera access denied');
+            }
+
+            try {
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: true 
+                });
+                examState.screenStream = screenStream;
+                examState.screenGranted = true;
+                examState.screenShareActive = true;
+
+                const screenBox = document.getElementById('screenPermission');
+                screenBox.classList.add('active');
+                screenBox.querySelector('.status-badge').textContent = 'GRANTED';
+                document.getElementById('screenShareStatus').textContent = 'Active';
+                permissionsGranted++;
+            } catch (error) {
+                console.error('Screen share error:', error);
+                const screenBox = document.getElementById('screenPermission');
+                screenBox.classList.add('denied');
+                screenBox.querySelector('.status-badge').textContent = 'DENIED';
+                fraudReasons.push('Screen sharing cancelled or denied');
+            }
+
+            if (permissionsGranted < 2) {
+                alert('Both camera and screen sharing are required. Please grant both permissions.');
+                return;
+            }
+
+            if (fraudReasons.length > 0) {
+                terminateExamForFraud(fraudReasons);
+                return;
+            }
+
+            document.getElementById('startExamBtn').disabled = false;
+        }
+
+        function startExam() {
+            // Start exam immediately - webcam monitoring disabled
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('examScreen').style.display = 'block';
+            examState.examStarted = true;
+            startTimer();
+            document.addEventListener('keydown', trackKeystrokes);
+        }
+
+        function trackKeystrokes(event) {
+            if (!examState.examStarted) return;
+
+            const now = Date.now();
+            examState.keystrokeTimestamps.push(now);
+            
+            const currentQuestion = examState.currentQuestion;
+            if (!examState.answerMetrics[`q${currentQuestion}`]) {
+                examState.answerMetrics[`q${currentQuestion}`] = {
+                    startTime: now,
+                    keystrokeCount: 0,
+                };
+            }
+
+            examState.answerMetrics[`q${currentQuestion}`].keystrokeCount++;
+
+            const metric = examState.answerMetrics[`q${currentQuestion}`];
+            metric.timeSpent = (now - metric.startTime) / 1000;
+
+            const textarea = document.getElementById(`answer${currentQuestion}`);
+            if (textarea) {
+                const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+                metric.wordCount = words;
+            }
+        }
+
+        function saveCurrentAnswer() {
+            const currentAnswer = document.getElementById(`answer${examState.currentQuestion}`);
+            if (currentAnswer) {
+                const text = currentAnswer.value.trim();
+                examState.answers[`q${examState.currentQuestion}`] = text;
+            }
+        }
+
+        function nextQuestion() {
+            if (examState.currentQuestion < 3) {
+                saveCurrentAnswer();
+                document.getElementById(`question${examState.currentQuestion}`).classList.remove('active');
+                examState.currentQuestion++;
+                document.getElementById(`question${examState.currentQuestion}`).classList.add('active');
+
+                document.getElementById('prevBtn').style.display = 'inline-block';
+                
+                if (examState.currentQuestion === 3) {
+                    document.getElementById('nextBtn').style.display = 'none';
+                    document.getElementById('submitBtn').style.display = 'inline-block';
+                }
+
+                updateProgress();
+                updateAnsweredCount();
+            }
+        }
+
+        function previousQuestion() {
+            if (examState.currentQuestion > 1) {
+                saveCurrentAnswer();
+                document.getElementById(`question${examState.currentQuestion}`).classList.remove('active');
+                examState.currentQuestion--;
+                document.getElementById(`question${examState.currentQuestion}`).classList.add('active');
+
+                if (examState.currentQuestion === 1) document.getElementById('prevBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('submitBtn').style.display = 'none';
+
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progress = (examState.currentQuestion / 3) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function updateAnsweredCount() {
+            let answeredCount = 0;
+            for (let i = 1; i <= 3; i++) {
+                const answer = examState.answers[`q${i}`];
+                if (answer && answer.length > 0) answeredCount++;
+            }
+            document.getElementById('questionsAnswered').textContent = `${answeredCount}/3 ANSWERED`;
+        }
+
+        function startTimer() {
+            examState.timerInterval = setInterval(() => {
+                examState.timeRemaining--;
+                let minutes = Math.floor(examState.timeRemaining / 60);
+                let seconds = examState.timeRemaining % 60;
+                if (seconds < 10) seconds = '0' + seconds;
+                if (minutes < 10) minutes = '0' + minutes;
+                timerBox.textContent = `${minutes}:${seconds}`;
+                timeRemainingDisplay.textContent = `${minutes}:${seconds}`;
+
+                if (examState.timeRemaining <= 60) timerBox.classList.add('warning');
+
+                if (examState.timeRemaining <= 0) {
+                    clearInterval(examState.timerInterval);
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('mousemove', () => {
+            if (examState.examStarted) {
+                examState.mouseCount++;
+                document.getElementById('mouseCount').textContent = examState.mouseCount;
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (examState.examStarted && document.hidden) {
+                examState.tabSwitches++;
+                document.getElementById('tabSwitches').textContent = `${examState.tabSwitches}/3`;
+                
+                warningAlert.innerHTML = '<div class="alert">⚠️ Tab switch detected!</div>';
+                setTimeout(() => { warningAlert.innerHTML = ''; }, 3000);
+
+                if (examState.tabSwitches >= examState.maxTabSwitches) {
+                    submitExam(true);
+                }
+            }
+        });
+
+        function displayAIDetectionResults(aiAnalysis) {
+            const details = aiAnalysis.details;
+            const overallScore = aiAnalysis.score;
+
+            const getLevel = (score) => {
+                if (score < 25) return { level: 'Low', className: 'low' };
+                if (score < 50) return { level: 'Medium', className: 'medium' };
+                return { level: 'High', className: 'high' };
+            };
+
+            const wordLengthLevel = getLevel(details.wordLength);
+            const formalityLevel = getLevel(details.formality);
+            const uniformityLevel = getLevel(details.uniformity);
+            const keystrokeLevel = getLevel(details.keystrokePattern);
+            const timeRatioLevel = getLevel(details.timeRatio);
+            const overallLevel = getLevel(overallScore);
+
+            document.getElementById('aiWordLength').textContent = wordLengthLevel.level + ` (${Math.round(details.wordLength)}%)`;
+            document.getElementById('aiWordLength').className = `ai-indicator-value ${wordLengthLevel.className}`;
+
+            document.getElementById('aiFormalityScore').textContent = formalityLevel.level + ` (${Math.round(details.formality)}%)`;
+            document.getElementById('aiFormalityScore').className = `ai-indicator-value ${formalityLevel.className}`;
+
+            document.getElementById('aiSentenceUniformity').textContent = uniformityLevel.level + ` (${Math.round(details.uniformity)}%)`;
+            document.getElementById('aiSentenceUniformity').className = `ai-indicator-value ${uniformityLevel.className}`;
+
+            document.getElementById('aiKeystrokePattern').textContent = keystrokeLevel.level + ` (${Math.round(details.keystrokePattern)}%)`;
+            document.getElementById('aiKeystrokePattern').className = `ai-indicator-value ${keystrokeLevel.className}`;
+
+            document.getElementById('aiTimeRatio').textContent = timeRatioLevel.level + ` (${Math.round(details.timeRatio)}%)`;
+            document.getElementById('aiTimeRatio').className = `ai-indicator-value ${timeRatioLevel.className}`;
+
+            document.getElementById('aiOverall').textContent = Math.round(overallScore) + '%';
+            document.getElementById('aiOverall').className = `ai-indicator-value ${overallLevel.className}`;
+
+            if (overallScore > 50) {
+                const violationMsg = document.getElementById('violationMsg');
+                violationMsg.textContent = `⚠️ MODERATE TO HIGH AI DETECTION (${Math.round(overallScore)}%) - Answer patterns suggest AI-generated content. This submission will be reviewed by the examination board.`;
+                violationMsg.style.display = 'block';
+                violationMsg.style.color = overallScore > 70 ? '#d00' : '#ff6b00';
+            }
+        }
+
+        function submitExam(violation = false) {
+            saveCurrentAnswer();
+            clearInterval(examState.timerInterval);
+            document.removeEventListener('keydown', trackKeystrokes);
+            document.getElementById('examScreen').style.display = 'none';
+            document.getElementById('submitScreen').style.display = 'block';
+
+            let answeredCount = 0;
+            for (let i = 1; i <= 3; i++) {
+                if (examState.answers[`q${i}`] && examState.answers[`q${i}`].length > 0) answeredCount++;
+            }
+            document.getElementById('finalAnswered').textContent = answeredCount;
+            document.getElementById('finalMouseCount').textContent = examState.mouseCount;
+            document.getElementById('finalTabSwitches').textContent = examState.tabSwitches;
+
+            let totalTime = 10*60 - examState.timeRemaining;
+            let minutes = Math.floor(totalTime / 60);
+            let seconds = totalTime % 60;
+            if (seconds < 10) seconds = '0' + seconds;
+            if (minutes < 10) minutes = '0' + minutes;
+            document.getElementById('timeTaken').textContent = `${minutes}:${seconds}`;
+
+            // Check AI detection first
+            const aiAnalysis = detectAI();
+            
+            // Set submission status based on violations and AI detection
+            const submissionStatusEl = document.getElementById('submissionStatus');
+            if (violation) {
+                submissionStatusEl.textContent = 'VIOLATION';
+                submissionStatusEl.classList.add('violation');
+                document.getElementById('violationMsg').textContent = '⚠️ Exam auto-submitted due to violation (exceeded allowed tab switches).';
+                document.getElementById('violationMsg').style.display = 'block';
+            } else if (aiAnalysis.score > 20) {
+                submissionStatusEl.textContent = 'POSSIBLE AI';
+                submissionStatusEl.classList.add('violation');
+            } else {
+                submissionStatusEl.textContent = 'SAFE';
+            }
+
+            displayAIDetectionResults(aiAnalysis);
+        }
+    </script>
+</body>
+</html>

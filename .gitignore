@@ -1,1 +1,7 @@
 .DS_Store
+firebase.json
+.firebase/
+.firebaserc
+404.html
+venv/
+exam_model_final/

@@ -1,0 +1,47 @@
+[
+  {
+    "text": "Question: Explain the primary purpose of object-oriented programming\nAnswer: Object-oriented programming enables code reusability, modularity, and easier maintenance through encapsulation, inheritance, and polymorphism principles."
+  },
+  {
+    "text": "Question: What is object-oriented programming used for\nAnswer: Object-oriented programming is used to organize code into reusable objects that model real-world entities, making software easier to develop and maintain."
+  },
+  {
+    "text": "Question: Which data structure uses LIFO principle\nAnswer: A stack data structure uses the LIFO (Last In First Out) principle where the last element added is the first one to be removed."
+  },
+  {
+    "text": "Question: What does LIFO mean in data structures\nAnswer: LIFO stands for Last In First Out, a principle where the most recently added item is the first to be accessed or removed, commonly used in stack implementations."
+  },
+  {
+    "text": "Question: What does API stand for in software development\nAnswer: API stands for Application Programming Interface, which allows different software applications to communicate and share data with each other."
+  },
+  {
+    "text": "Question: Explain what an API is\nAnswer: An API is an Application Programming Interface that defines how software components should interact, enabling different programs to exchange information."
+  },
+  {
+    "text": "Question: What is a database\nAnswer: A database is an organized collection of structured data stored electronically, designed for efficient storage, retrieval, and management of information."
+  },
+  {
+    "text": "Question: Explain the concept of inheritance in OOP\nAnswer: Inheritance in object-oriented programming allows a class to inherit properties and methods from a parent class, promoting code reuse and hierarchical relationships."
+  },
+  {
+    "text": "Question: What is a variable in programming\nAnswer: A variable is a named storage location in memory that holds a value which can change during program execution."
+  },
+  {
+    "text": "Question: What is the difference between a stack and a queue\nAnswer: A stack uses LIFO (Last In First Out) while a queue uses FIFO (First In First Out) for managing elements."
+  },
+  {
+    "text": "Question: What is encapsulation in programming\nAnswer: Encapsulation is the bundling of data and methods that operate on that data within a single unit or class, restricting direct access to some components."
+  },
+  {
+    "text": "Question: What is a loop in programming\nAnswer: A loop is a programming construct that repeats a block of code multiple times until a specified condition is met."
+  },
+  {
+    "text": "Question: What is recursion\nAnswer: Recursion is a programming technique where a function calls itself to solve a problem by breaking it down into smaller, similar subproblems."
+  },
+  {
+    "text": "Question: What is an algorithm\nAnswer: An algorithm is a step-by-step procedure or set of rules designed to solve a specific problem or perform a computation."
+  },
+  {
+    "text": "Question: What is the purpose of a constructor\nAnswer: A constructor is a special method that initializes a newly created object and sets up its initial state when an instance of a class is created."
+  }
+]

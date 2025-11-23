@@ -1,0 +1,373 @@
+[2025-11-22 21:01:06] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:05:56] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:05:57] Portal Loaded
+[2025-11-22 21:06:00] Exam Started
+[2025-11-22 21:06:00] Read Q1: Explain the primary purpose of...
+[2025-11-22 21:06:01] AI Answered Q1
+[2025-11-22 21:06:05] Read Q2: Which data structure uses LIFO...
+[2025-11-22 21:06:05] AI Answered Q2
+[2025-11-22 21:06:09] Read Q3: What does API stand for in sof...
+[2025-11-22 21:06:09] AI Answered Q3
+[2025-11-22 21:06:13] Submit Button Clicked
+[2025-11-22 21:06:15] SIMULATION ENDED. Result: SAFE
+[2025-11-22 21:08:16] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:08:17] Portal Loaded
+[2025-11-22 21:08:20] Exam Started
+[2025-11-22 21:08:20] Read Q1: Explain the primary purpose of...
+[2025-11-22 21:08:20] AI Answered Q1
+[2025-11-22 21:10:00] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:10:01] Portal Loaded
+[2025-11-22 21:10:05] Exam Started
+[2025-11-22 21:10:05] Read Q1: Explain the primary purpose of...
+[2025-11-22 21:10:05] AI Answered Q1
+[2025-11-22 21:10:08] Read Q2: Which data structure uses LIFO...
+[2025-11-22 21:10:08] AI Answered Q2
+[2025-11-22 21:10:13] Read Q3: What does API stand for in sof...
+[2025-11-22 21:10:13] AI Answered Q3
+[2025-11-22 21:10:18] Submit Button Clicked
+[2025-11-22 21:10:20] SIMULATION ENDED. Result: SAFE
+[2025-11-22 21:11:06] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:11:09] Portal Loaded
+[2025-11-22 21:11:12] Exam Started
+[2025-11-22 21:11:12] Read Q1: Explain the primary purpose of...
+[2025-11-22 21:11:12] AI Answered Q1
+[2025-11-22 21:11:17] Read Q2: Which data structure uses LIFO...
+[2025-11-22 21:11:17] AI Answered Q2
+[2025-11-22 21:11:20] Read Q3: What does API stand for in sof...
+[2025-11-22 21:11:21] AI Answered Q3
+[2025-11-22 21:11:24] Submit Button Clicked
+[2025-11-22 21:11:26] SIMULATION ENDED. Result: SAFE
+[2025-11-22 21:12:55] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:12:56] Portal Loaded
+[2025-11-22 21:12:59] Exam Started
+[2025-11-22 21:12:59] Read Q1: Explain the primary purpose of...
+[2025-11-22 21:13:00] AI Answered Q1
+[2025-11-22 21:13:03] Read Q2: Which data structure uses LIFO...
+[2025-11-22 21:13:03] AI Answered Q2
+[2025-11-22 21:13:06] Read Q3: What does API stand for in sof...
+[2025-11-22 21:13:06] AI Answered Q3
+[2025-11-22 21:13:09] Submit Button Clicked
+[2025-11-22 21:13:39] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:13:40] Portal Loaded
+[2025-11-22 21:13:44] Exam Started
+[2025-11-22 21:13:44] Read Q1: Explain the primary purpose of...
+[2025-11-22 21:13:44] AI Answered Q1
+[2025-11-22 21:13:47] Read Q2: Which data structure uses LIFO...
+[2025-11-22 21:13:47] AI Answered Q2
+[2025-11-22 21:13:50] Read Q3: What does API stand for in sof...
+[2025-11-22 21:13:50] AI Answered Q3
+[2025-11-22 21:13:53] Submit Button Clicked
+[2025-11-22 21:13:55] SIMULATION ENDED. Result: SAFE
+[2025-11-22 21:16:15] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:16:17] Portal Loaded
+[2025-11-22 21:16:20] Exam Started
+[2025-11-22 21:16:20] Read Q1: Explain the primary purpose of...
+[2025-11-22 21:16:20] AI Answered Q1
+[2025-11-22 21:16:24] Read Q2: Which data structure uses LIFO...
+[2025-11-22 21:16:24] AI Answered Q2
+[2025-11-22 21:16:26] CRITICAL FAIL: 'NoneType' object has no attribute 'click'
+[2025-11-22 21:17:13] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:17:14] Portal Loaded
+[2025-11-22 21:17:17] Exam Started
+[2025-11-22 21:17:17] Read Q1: Explain the primary purpose of...
+[2025-11-22 21:17:18] AI Answered Q1
+[2025-11-22 21:17:20] Read Q2: Which data structure uses LIFO...
+[2025-11-22 21:17:20] AI Answered Q2
+[2025-11-22 21:17:24] Read Q3: What does API stand for in sof...
+[2025-11-22 21:17:24] AI Answered Q3
+[2025-11-22 21:17:28] Submit Button Clicked
+[2025-11-22 21:17:30] SIMULATION ENDED. Result: SAFE
+[2025-11-22 21:25:13] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:25:14] Portal Loaded
+[2025-11-22 21:25:17] Exam Started
+[2025-11-22 21:25:18] Read Q1: Explain the primary purpose of object-or...
+[2025-11-22 21:25:18] AI Answered Q1: The primary purpose is to provide core functionali...
+[2025-11-22 21:25:24] Read Q2: Which data structure uses LIFO (Last In ...
+[2025-11-22 21:25:24] AI Answered Q2: The primary purpose is to provide core functionali...
+[2025-11-22 21:25:31] Read Q3: What does API stand for in software deve...
+[2025-11-22 21:25:31] AI Answered Q3: The primary purpose is to provide core functionali...
+[2025-11-22 21:25:37] Submit Button Clicked
+[2025-11-22 21:25:39] SIMULATION ENDED. Result: SAFE
+[2025-11-22 21:26:34] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:26:35] Portal Loaded
+[2025-11-22 21:26:38] Exam Started
+[2025-11-22 21:26:39] Read Q1: Explain the primary purpose of object-or...
+[2025-11-22 21:26:39] AI Answered Q1: The primary purpose is to provide core functionali...
+[2025-11-22 21:26:45] Read Q2: Which data structure uses LIFO (Last In ...
+[2025-11-22 21:26:45] AI Answered Q2: The primary purpose is to provide core functionali...
+[2025-11-22 21:26:52] Read Q3: What does API stand for in software deve...
+[2025-11-22 21:26:52] AI Answered Q3: The primary purpose is to provide core functionali...
+[2025-11-22 21:26:58] Submit Button Clicked
+[2025-11-22 21:27:00] SIMULATION ENDED. Result: SAFE
+[2025-11-22 21:46:33] --- STARTING NEW SIMULATION ---
+[2025-11-22 21:46:33] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 21:46:35] Portal Loaded
+[2025-11-22 21:46:38] Exam Started
+[2025-11-22 21:46:38] Read Q1: Explain the primary purpose of object-or...
+[2025-11-22 21:46:39] Answered Q1: Object-oriented programmers use a set of objects t...
+[2025-11-22 21:47:04] Read Q2: Which data structure uses LIFO (Last In ...
+[2025-11-22 21:47:05] Answered Q2: A first-in, last-out is a function that takes an o...
+[2025-11-22 21:47:27] Read Q3: What does API stand for in software deve...
+[2025-11-22 21:47:28] Answered Q3: APIs are a type of data-oriented programming syste...
+[2025-11-22 21:47:54] Submit Button Clicked
+[2025-11-22 21:47:56] SIMULATION ENDED. Result: SAFE
+[2025-11-22 22:18:04] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:18:04] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:18:07] Portal Loaded
+[2025-11-22 22:18:10] Exam Started
+[2025-11-22 22:18:10] Read Q1: Explain the primary purpose of object-or...
+[2025-11-22 22:18:13] Answered Q1: Object-oriented code is a collection of functions ...
+[2025-11-22 22:18:40] Read Q2: Which data structure uses LIFO (Last In ...
+[2025-11-22 22:18:42] Answered Q2: The first one is to describe a class that stores t...
+[2025-11-22 22:19:07] Read Q3: What does API stand for in software deve...
+[2025-11-22 22:19:10] Answered Q3: APIs are a set of types that provide information a...
+[2025-11-22 22:19:32] Submit Button Clicked
+[2025-11-22 22:19:34] SIMULATION ENDED. Result: SAFE
+[2025-11-22 22:24:53] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:24:53] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:24:55] Portal Loaded
+[2025-11-22 22:24:58] Exam Started
+[2025-11-22 22:25:18] CRITICAL FAIL: Message: 
+
+[2025-11-22 22:25:30] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:25:30] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:25:32] Portal Loaded
+[2025-11-22 22:25:35] Exam Started
+[2025-11-22 22:35:10] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:35:10] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:35:13] Portal Loaded
+[2025-11-22 22:35:16] Exam Started
+[2025-11-22 22:35:16] CRITICAL FAIL: Alert Text: Please wait for the webcam to initialize completely before starting the exam.
+Message: unexpected alert open: {Alert text : Please wait for the webcam to initialize completely before starting the exam.}
+  (Session info: chrome=142.0.7444.176)
+Stacktrace:
+0   chromedriver                        0x00000001014b2ecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x00000001014aab88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x0000000100fc22b0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 74020
+3   chromedriver                        0x000000010104b4cc _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 635712
+4   chromedriver                        0x0000000100ffdef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+5   chromedriver                        0x00000001014760c8 cxxbridge1$str$ptr + 2692164
+6   chromedriver                        0x00000001014798dc cxxbridge1$str$ptr + 2706520
+7   chromedriver                        0x000000010145684c cxxbridge1$str$ptr + 2563016
+8   chromedriver                        0x000000010147a1b4 cxxbridge1$str$ptr + 2708784
+9   chromedriver                        0x00000001014480f4 cxxbridge1$str$ptr + 2503792
+10  chromedriver                        0x0000000101499498 cxxbridge1$str$ptr + 2836500
+11  chromedriver                        0x000000010149961c cxxbridge1$str$ptr + 2836888
+12  chromedriver                        0x00000001014aa7d8 cxxbridge1$str$ptr + 2906964
+13  libsystem_pthread.dylib             0x0000000189f71c08 _pthread_start + 136
+14  libsystem_pthread.dylib             0x0000000189f6cba8 thread_start + 8
+
+[2025-11-22 22:42:48] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:42:48] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:42:50] Portal Loaded
+[2025-11-22 22:42:53] Exam Started
+[2025-11-22 22:42:53] Read Q1: Explain the primary purpose of object-or...
+[2025-11-22 22:42:55] Answered Q1: Object-oriented programmers have always intended t...
+[2025-11-22 22:42:58] CRITICAL FAIL: Message: element not interactable
+  (Session info: chrome=142.0.7444.176); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
+Stacktrace:
+0   chromedriver                        0x00000001029beecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x00000001029b6b88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x00000001024ce114 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73608
+3   chromedriver                        0x0000000102510778 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 345580
+4   chromedriver                        0x000000010250f15c _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 339920
+5   chromedriver                        0x000000010250b504 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 324472
+6   chromedriver                        0x0000000102556d54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+7   chromedriver                        0x0000000102509ef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+8   chromedriver                        0x00000001029820c8 cxxbridge1$str$ptr + 2692164
+9   chromedriver                        0x00000001029858dc cxxbridge1$str$ptr + 2706520
+10  chromedriver                        0x000000010296284c cxxbridge1$str$ptr + 2563016
+11  chromedriver                        0x00000001029861b4 cxxbridge1$str$ptr + 2708784
+12  chromedriver                        0x00000001029540f4 cxxbridge1$str$ptr + 2503792
+13  chromedriver                        0x00000001029a5498 cxxbridge1$str$ptr + 2836500
+14  chromedriver                        0x00000001029a561c cxxbridge1$str$ptr + 2836888
+15  chromedriver                        0x00000001029b67d8 cxxbridge1$str$ptr + 2906964
+16  libsystem_pthread.dylib             0x0000000189f71c08 _pthread_start + 136
+17  libsystem_pthread.dylib             0x0000000189f6cba8 thread_start + 8
+
+[2025-11-22 22:48:27] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:48:27] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:48:29] Portal Loaded
+[2025-11-22 22:48:48] CRITICAL FAIL: Message: element not interactable
+  (Session info: chrome=142.0.7444.176); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
+Stacktrace:
+0   chromedriver                        0x0000000100ae2ecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x0000000100adab88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x00000001005f2114 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73608
+3   chromedriver                        0x000000010063a8a8 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370460
+4   chromedriver                        0x000000010062fa78 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 325868
+5   chromedriver                        0x000000010062f504 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 324472
+6   chromedriver                        0x000000010067ad54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+7   chromedriver                        0x000000010062def0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+8   chromedriver                        0x0000000100aa60c8 cxxbridge1$str$ptr + 2692164
+9   chromedriver                        0x0000000100aa98dc cxxbridge1$str$ptr + 2706520
+10  chromedriver                        0x0000000100a8684c cxxbridge1$str$ptr + 2563016
+11  chromedriver                        0x0000000100aaa1b4 cxxbridge1$str$ptr + 2708784
+12  chromedriver                        0x0000000100a780f4 cxxbridge1$str$ptr + 2503792
+13  chromedriver                        0x0000000100ac9498 cxxbridge1$str$ptr + 2836500
+14  chromedriver                        0x0000000100ac961c cxxbridge1$str$ptr + 2836888
+15  chromedriver                        0x0000000100ada7d8 cxxbridge1$str$ptr + 2906964
+16  libsystem_pthread.dylib             0x0000000189f71c08 _pthread_start + 136
+17  libsystem_pthread.dylib             0x0000000189f6cba8 thread_start + 8
+
+[2025-11-22 22:51:47] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:51:47] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:51:47] Test Mode: Security checks disabled
+[2025-11-22 22:51:49] Portal Loaded
+[2025-11-22 22:51:51] Permissions Granted (Test Mode)
+[2025-11-22 22:52:05] Start button issue: Message: element not interactable
+  (Session info: chrome=142.0.7444.176); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
+Stacktrace:
+0   chromedriver                        0x0000000102cfaecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x0000000102cf2b88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x000000010280a114 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73608
+3   chromedriver                        0x00000001028528a8 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370460
+4   chromedriver                        0x0000000102847a78 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 325868
+5   chromedriver                        0x0000000102847504 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 324472
+6   chromedriver                        0x0000000102892d54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+7   chromedriver                        0x0000000102845ef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+8   chromedriver                        0x0000000102cbe0c8 cxxbridge1$str$ptr + 2692164
+9   chromedriver                        0x0000000102cc18dc cxxbridge1$str$ptr + 2706520
+10  chromedriver                        0x0000000102c9e84c cxxbridge1$str$ptr + 2563016
+11  chromedriver                        0x0000000102cc21b4 cxxbridge1$str$ptr + 2708784
+12  chromedriver                        0x0000000102c900f4 cxxbridge1$str$ptr + 2503792
+13  chromedriver                        0x0000000102ce1498 cxxbridge1$str$ptr + 2836500
+14  chromedriver                        0x0000000102ce161c cxxbridge1$str$ptr + 2836888
+15  chromedriver                        0x0000000102cf27d8 cxxbridge1$str$ptr + 2906964
+16  libsystem_pthread.dylib             0x0000000189f71c08 _pthread_start + 136
+17  libsystem_pthread.dylib             0x0000000189f6cba8 thread_start + 8
+
+[2025-11-22 22:52:05] ❌ CRITICAL FAIL: ElementNotInteractableException: Message: element not interactable
+  (Session info: chrome=142.0.7444.176); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
+Stacktrace:
+0   chromedriver                        0x0000000102cfaecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x0000000102cf2b88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x000000010280a114 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73608
+3   chromedriver                        0x00000001028528a8 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370460
+4   chromedriver                        0x0000000102847a78 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 325868
+5   chromedriver                        0x0000000102847504 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 324472
+6   chromedriver                        0x0000000102892d54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+7   chromedriver                        0x0000000102845ef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+8   chromedriver                        0x0000000102cbe0c8 cxxbridge1$str$ptr + 2692164
+9   chromedriver                        0x0000000102cc18dc cxxbridge1$str$ptr + 2706520
+10  chromedriver                        0x0000000102c9e84c cxxbridge1$str$ptr + 2563016
+11  chromedriver                        0x0000000102cc21b4 cxxbridge1$str$ptr + 2708784
+12  chromedriver                        0x0000000102c900f4 cxxbridge1$str$ptr + 2503792
+13  chromedriver                        0x0000000102ce1498 cxxbridge1$str$ptr + 2836500
+14  chromedriver                        0x0000000102ce161c cxxbridge1$str$ptr + 2836888
+15  chromedriver                        0x0000000102cf27d8 cxxbridge1$str$ptr + 2906964
+16  libsystem_pthread.dylib             0x0000000189f71c08 _pthread_start + 136
+17  libsystem_pthread.dylib             0x0000000189f6cba8 thread_start + 8
+
+[2025-11-22 22:52:05] Screenshot saved: error_snapshot_20251122_225205.png
+[2025-11-22 22:52:05] Current URL: http://127.0.0.1:5500/public/exam.html
+[2025-11-22 22:52:05] Page Title: Online Examination System
+[2025-11-22 22:52:05] Closing browser...
+[2025-11-22 22:52:06] Simulation ended.
+
+[2025-11-22 22:54:46] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:54:46] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:54:46] Test Mode: Security checks disabled
+[2025-11-22 22:54:49] Portal Loaded
+[2025-11-22 22:54:51] Found Grant Permissions button
+[2025-11-22 22:54:51] Clicked Grant Permissions (Test Mode)
+[2025-11-22 22:54:59] Closing browser...
+[2025-11-22 22:54:59] Simulation ended.
+
+[2025-11-22 22:55:31] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:55:31] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:55:31] Test Mode: Security checks disabled
+[2025-11-22 22:55:41] Portal Loaded
+[2025-11-22 22:55:43] Found Grant Permissions button
+[2025-11-22 22:55:43] Clicked Grant Permissions (Test Mode)
+[2025-11-22 22:55:50] ❌ Start button issue: 'NoneType' object has no attribute 'is_displayed'
+[2025-11-22 22:55:50] ❌ CRITICAL FAIL: AttributeError: 'NoneType' object has no attribute 'is_displayed'
+[2025-11-22 22:55:50] Could not save screenshot
+[2025-11-22 22:55:50] Closing browser...
+[2025-11-22 22:55:50] Simulation ended.
+
+[2025-11-22 22:58:44] --- STARTING NEW SIMULATION ---
+[2025-11-22 22:58:44] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 22:58:45] Portal Loaded
+[2025-11-22 22:59:07] CRITICAL FAIL: Message: 
+
+[2025-11-22 23:00:32] --- STARTING NEW SIMULATION ---
+[2025-11-22 23:00:32] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 23:00:34] Portal Loaded
+[2025-11-22 23:00:49] CRITICAL FAIL: 'NoneType' object has no attribute 'is_displayed'
+[2025-11-22 23:01:14] --- STARTING NEW SIMULATION ---
+[2025-11-22 23:01:14] Mode: Using locally trained model (exam_model_final)
+[2025-11-22 23:01:16] Portal Loaded
+[2025-11-22 23:01:19] Exam Started
+[2025-11-22 23:01:19] Read Q1: Explain the primary purpose of object-or...
+[2025-11-22 23:01:22] Answered Q1: Object-oriented programs (OOP) are applications th...
+[2025-11-22 23:01:24] CRITICAL FAIL: Message: element not interactable
+  (Session info: chrome=142.0.7444.176); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
+Stacktrace:
+0   chromedriver                        0x0000000102d66ecc cxxbridge1$str$ptr + 2941512
+1   chromedriver                        0x0000000102d5eb88 cxxbridge1$str$ptr + 2907908
+2   chromedriver                        0x0000000102876114 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73608
+3   chromedriver                        0x00000001028b8778 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 345580
+4   chromedriver                        0x00000001028b715c _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 339920
+5   chromedriver                        0x00000001028b3504 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 324472
+6   chromedriver                        0x00000001028fed54 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 633800
+7   chromedriver                        0x00000001028b1ef0 _RNvCsgXDX2mvAJAg_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 318820
+8   chromedriver                        0x0000000102d2a0c8 cxxbridge1$str$ptr + 2692164
+9   chromedriver                        0x0000000102d2d8dc cxxbridge1$str$ptr + 2706520
+10  chromedriver                        0x0000000102d0a84c cxxbridge1$str$ptr + 2563016
+11  chromedriver                        0x0000000102d2e1b4 cxxbridge1$str$ptr + 2708784
+12  chromedriver                        0x0000000102cfc0f4 cxxbridge1$str$ptr + 2503792
+13  chromedriver                        0x0000000102d4d498 cxxbridge1$str$ptr + 2836500
+14  chromedriver                        0x0000000102d4d61c cxxbridge1$str$ptr + 2836888
+15  chromedriver                        0x0000000102d5e7d8 cxxbridge1$str$ptr + 2906964
+16  libsystem_pthread.dylib             0x0000000189f71c08 _pthread_start + 136
+17  libsystem_pthread.dylib             0x0000000189f6cba8 thread_start + 8
+
+[2025-11-23 09:11:19] --- STARTING NEW SIMULATION ---
+[2025-11-23 09:11:19] Mode: Using locally trained model (exam_model_final)
+[2025-11-23 09:11:23] Portal Loaded
+[2025-11-23 09:11:26] Exam Started
+[2025-11-23 09:11:26] Read Q1: Explain the primary purpose of object-or...
+[2025-11-23 09:11:28] Answered Q1: Object-oriented programmers use objects to represe...
+[2025-11-23 09:11:50] Read Q2: Which data structure uses LIFO (Last In ...
+[2025-11-23 09:11:51] Answered Q2: A first-in, last-out is an information system that...
+[2025-11-23 09:12:14] Read Q3: What does API stand for in software deve...
+[2025-11-23 09:12:15] Answered Q3: APIs are a tool that describes how an object is cr...
+[2025-11-23 09:12:40] Submit Button Clicked
+[2025-11-23 09:12:42] SIMULATION ENDED. Result: SAFE
+[2025-11-23 09:20:10] --- STARTING NEW SIMULATION ---
+[2025-11-23 09:20:10] Mode: Using locally trained model (exam_model_final)
+[2025-11-23 09:20:12] Portal Loaded
+[2025-11-23 09:20:15] Exam Started
+[2025-11-23 09:20:15] Read Q1: Explain the primary purpose of object-or...
+[2025-11-23 09:20:17] Answered Q1: Object-oriented Programming defines an abstract me...
+[2025-11-23 09:20:42] Read Q2: Which data structure uses LIFO (Last In ...
+[2025-11-23 09:20:43] Answered Q2: A program stores a number of values that can be us...
+[2025-11-23 09:21:04] Read Q3: What does API stand for in software deve...
+[2025-11-23 09:21:05] Answered Q3: A simple concept is a collection of APIs that defi...
+[2025-11-23 09:21:27] Submit Button Clicked
+[2025-11-23 09:21:29] SIMULATION ENDED. Result: SAFE
+[2025-11-23 09:23:22] --- STARTING NEW SIMULATION ---
+[2025-11-23 09:23:22] Mode: Using locally trained model (exam_model_final)
+[2025-11-23 09:23:24] Portal Loaded
+[2025-11-23 09:23:28] Exam Started
+[2025-11-23 09:23:28] Read Q1: Explain the primary purpose of object-or...
+[2025-11-23 09:23:30] Answered Q1: Object-oriented programs focus on solving problems...
+[2025-11-23 09:23:54] Read Q2: Which data structure uses LIFO (Last In ...
+[2025-11-23 09:23:56] Answered Q2: A first-in, last-out model applies the following p...
+[2025-11-23 09:24:20] Read Q3: What does API stand for in software deve...
+[2025-11-23 09:24:21] Answered Q3: An application-oriented programming language is a ...
+[2025-11-23 09:24:44] Submit Button Clicked
+[2025-11-23 09:24:46] SIMULATION ENDED. Result: POSSIBLE AI
+[2025-11-23 09:28:55] --- STARTING NEW SIMULATION ---
+[2025-11-23 09:28:55] Mode: Using locally trained model (exam_model_final)
+[2025-11-23 09:28:56] Portal Loaded
+[2025-11-23 09:28:59] Exam Started
+[2025-11-23 09:28:59] Read Q1: Explain the primary purpose of object-or...
+[2025-11-23 09:29:01] Answered Q1: Object-oriented programmers use various approaches...
+[2025-11-23 09:29:25] Read Q2: Which data structure uses LIFO (Last In ...
+[2025-11-23 09:29:26] Answered Q2: A simple one-of, two-part class is a collection of...
+[2025-11-23 09:29:46] Read Q3: What does API stand for in software deve...
+[2025-11-23 09:29:48] Answered Q3: APIs are an abstraction system that enables progra...
+[2025-11-23 09:30:11] Submit Button Clicked
+[2025-11-23 09:30:13] SIMULATION ENDED. Result: POSSIBLE AI

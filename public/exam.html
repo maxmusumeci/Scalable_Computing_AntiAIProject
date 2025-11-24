@@ -803,7 +803,7 @@
             keystrokeTimestamps: [],
             webcamActive: false,
             screenShareActive: false,
-            serverUrl: "https://exam-portal-captcha-test.web.app",
+            serverUrl: "https://scalable-computing-backend.onrender.com",
             eyeTrackingActive: false,
             attentionViolations: 0
         };
@@ -1133,6 +1133,12 @@
                     }, 500);
                 });
             };
+
+            // Check if video is already loaded (metadata already available)
+            if (video.readyState >= 2) {
+                console.log('Video already loaded, starting immediately');
+                video.onloadedmetadata();
+            }
 
             examState.examStarted = true;
             startTimer();

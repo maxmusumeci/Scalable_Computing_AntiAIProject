@@ -7,7 +7,17 @@ import os
 import base64
 
 app = Flask(__name__)
-CORS(app)
+# Replace 'your-app.web.app' with your actual Firebase hosting URL
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "https://exam-portal-captcha-test.web.app",
+            "https://your-app.firebaseapp.com",
+            "http://localhost:5000",  # Keep for local testing
+            "http://127.0.0.1:5000"
+        ]
+    }
+})
 
 class EyeTracker:
 
@@ -145,8 +155,8 @@ class EyeTracker:
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-face_cascade_path = os.path.join(script_dir, "backend/haarcascade_frontalface_default.xml")
-eye_cascade_path = os.path.join(script_dir, "backend/haarcascade_eye.xml")
+face_cascade_path = os.path.join(script_dir, "haarcascade_frontalface_default.xml")
+eye_cascade_path = os.path.join(script_dir, "haarcascade_eye.xml")
 
 face_cascade = cv2.CascadeClassifier(face_cascade_path)
 eye_cascade = cv2.CascadeClassifier(eye_cascade_path)
@@ -209,4 +219,3 @@ def reset_tracking():
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
-

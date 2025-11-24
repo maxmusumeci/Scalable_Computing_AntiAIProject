@@ -1262,6 +1262,8 @@
             if (SINGLE_STAGE_MODE === 'maze') {
                 document.getElementById('mazeCaptcha').classList.add('active');
                 mazeCaptcha = new MazeCaptcha();
+                window.mazeCaptcha = mazeCaptcha;  // ⭐ ADD THIS LINE - Expose globally
+                console.log('Maze instance exposed:', window.mazeCaptcha);
 
                 document.getElementById('mazeSubmitBtn').addEventListener('click', () => {
                     if (captchaTimedOut) {

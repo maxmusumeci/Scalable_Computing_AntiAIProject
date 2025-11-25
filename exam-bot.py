@@ -31,8 +31,8 @@ def ask_headless_mode():
         print("❌ Invalid input. Please type 'y' or 'n'.")
 
 # Target Config
-TARGET_URL = "https://exam-portal-captcha-test.web.app/exam.html" 
-# TARGET_URL = "http://127.0.0.1:5500/public/exam.html" 
+# TARGET_URL = "https://exam-portal-captcha-test.web.app/exam.html" 
+TARGET_URL = "http://127.0.0.1:5500/exam.html" 
 LOG_FILE = "simulation_log.txt"
 HUMAN_TYPING = True
 

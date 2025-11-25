@@ -13,8 +13,8 @@ CORS(app, resources={
         "origins": [
             "https://exam-portal-captcha-test.web.app",
             "https://your-app.firebaseapp.com",
-            "http://localhost:5000",  # Keep for local testing
-            "http://127.0.0.1:5000"
+            "http://localhost:5500",  # Keep for local testing
+            "http://127.0.0.1:5500"
         ]
     }
 })
@@ -188,7 +188,7 @@ eye_tracker = EyeTracker(violation_threshold=80, max_violations=5)
 
 @app.route('/')
 def index():
-    return send_file('index.html')
+    return send_file('public/exam.html')
 
 @app.route('/process_frame', methods=['POST'])
 def process_frame():
@@ -218,4 +218,4 @@ def reset_tracking():
     return jsonify({'success': True})
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5501)

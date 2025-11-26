@@ -566,24 +566,24 @@ class BotDetector {
         });
     }
 
-    // handlePointerMove(event) {
-    //     // Pointer events give us more info about input type
-    //     this.advancedData.pointerTypes.push(event.pointerType);
+    handlePointerMove(event) {
+        // Pointer events give us more info about input type
+        this.advancedData.pointerTypes.push(event.pointerType);
         
-    //     // Check for pressure (real devices have varying pressure)
-    //     if (event.pressure !== undefined) {
-    //         // Synthetic events often have pressure of 0 or exactly 0.5
-    //         if (event.pressure === 0 || event.pressure === 0.5) {
-    //             this.advancedData.eventSourceTypes.push('synthetic_pressure');
-    //         } else {
-    //             this.advancedData.eventSourceTypes.push('real_pressure');
-    //         }
-    //     }
-    // }
+        // Check for pressure (real devices have varying pressure)
+        if (event.pressure !== undefined) {
+            // Synthetic events often have pressure of 0 or exactly 0.5
+            if (event.pressure === 0 || event.pressure === 0.5) {
+                this.advancedData.eventSourceTypes.push('synthetic_pressure');
+            } else {
+                this.advancedData.eventSourceTypes.push('real_pressure');
+            }
+        }
+    }
 
-    // handlePointerDown(event) {
-    //     this.advancedData.pointerTypes.push(event.pointerType);
-    // }
+    handlePointerDown(event) {
+        this.advancedData.pointerTypes.push(event.pointerType);
+    }
 
     handlePointerMove(event) {
         const now = Date.now();

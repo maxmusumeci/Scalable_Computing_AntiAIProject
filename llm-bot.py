@@ -966,7 +966,7 @@ class AdvancedCAPTCHAAttacker:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Advanced CAPTCHA Bot Attacker')
-    parser.add_argument('--url', default='https://exam-portal-captcha-test.web.app/index.html', 
+    parser.add_argument('--url', default='http://127.0.0.1:5500/index.html', 
                        help='Target URL') # Default changed to local dev URL for testing Playwright scripts
     parser.add_argument('--attempts', type=int, default=1, 
                        help='Number of full attempts')

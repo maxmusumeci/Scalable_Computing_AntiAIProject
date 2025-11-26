@@ -759,24 +759,20 @@
             <div class="ai-detection-box" id="aiDetectionBox">
                 <h4>⚠️ AI Detection Analysis</h4>
                 <div class="ai-indicator">
-                    <span class="ai-indicator-label">Average Word Length</span>
-                    <span class="ai-indicator-value" id="aiWordLength">-</span>
+                    <span class="ai-indicator-label">Copy-Paste Detection</span>
+                    <span class="ai-indicator-value" id="aiCopyPaste">-</span>
                 </div>
                 <div class="ai-indicator">
-                    <span class="ai-indicator-label">Formal Language Score</span>
-                    <span class="ai-indicator-value" id="aiFormalityScore">-</span>
+                    <span class="ai-indicator-label">Typing Speed Analysis</span>
+                    <span class="ai-indicator-value" id="aiTypingSpeed">-</span>
                 </div>
                 <div class="ai-indicator">
-                    <span class="ai-indicator-label">Sentence Uniformity</span>
-                    <span class="ai-indicator-value" id="aiSentenceUniformity">-</span>
-                </div>
-                <div class="ai-indicator">
-                    <span class="ai-indicator-label">Keystroke Patterns</span>
+                    <span class="ai-indicator-label">Keystroke Pattern</span>
                     <span class="ai-indicator-value" id="aiKeystrokePattern">-</span>
                 </div>
                 <div class="ai-indicator">
-                    <span class="ai-indicator-label">Time-to-Answer Ratio</span>
-                    <span class="ai-indicator-value" id="aiTimeRatio">-</span>
+                    <span class="ai-indicator-label">AI Language Patterns</span>
+                    <span class="ai-indicator-value" id="aiLanguagePattern">-</span>
                 </div>
                 <div class="ai-indicator">
                     <span class="ai-indicator-label">Overall AI Probability</span>
@@ -812,182 +808,189 @@
         const timeRemainingDisplay = document.getElementById('timeRemaining');
         const warningAlert = document.getElementById('warningAlert');
 
-        function analyzeAnswerForAI(text) {
-            if (!text || text.length < 10) return null;
-
-            const words = text.trim().split(/\s+/).filter(w => w.length > 0);
-            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-            
-            const metrics = {
-                wordCount: words.length,
-                avgWordLength: words.reduce((sum, w) => sum + w.length, 0) / words.length,
-                sentenceCount: Math.max(sentences.length, 1),
-                avgSentenceLength: words.length / Math.max(sentences.length, 1),
-                uniqueWordRatio: new Set(words.map(w => w.toLowerCase())).size / words.length,
-                formalWords: 0,
-                sentenceLengthVariance: 0,
-                capitalLetterRatio: (text.match(/[A-Z]/g) || []).length / text.length,
-                commaCount: (text.match(/,/g) || []).length,
-                colonCount: (text.match(/:/g) || []).length,
-                complexWords: 0,
-            };
-
-            // Expanded formal/AI-like words and phrases
-            const formalWords = [
-                'furthermore', 'moreover', 'thus', 'thereby', 'consequently', 'therefore', 
-                'however', 'nevertheless', 'additionally', 'specifically', 'essentially',
-                'particularly', 'significantly', 'notably', 'primarily', 'fundamentally',
-                'comprehensive', 'facilitate', 'utilize', 'implement', 'demonstrate',
-                'emphasize', 'illustrate', 'exemplify', 'encompass', 'inherent',
-                'paradigm', 'leverage', 'optimal', 'robust', 'intrinsic', 'enables'
-            ];
-            
-            metrics.formalWords = words.filter(w => formalWords.includes(w.toLowerCase())).length;
-            metrics.complexWords = words.filter(w => w.length > 8).length;
-
-            const sentenceLengths = sentences.map(s => s.trim().split(/\s+/).length);
-            if (sentenceLengths.length > 1) {
-                const avgLen = sentenceLengths.reduce((a, b) => a + b, 0) / sentenceLengths.length;
-                metrics.sentenceLengthVariance = Math.sqrt(sentenceLengths.reduce((sum, len) => sum + Math.pow(len - avgLen, 2), 0) / sentenceLengths.length);
-            } else {
-                metrics.sentenceLengthVariance = 0;
-            }
-
-            return metrics;
-        }
-
+        /**
+         * FIXED AI DETECTION SYSTEM
+         * Proper thresholds based on realistic human writing patterns
+         */
         function detectAI() {
-            let details = {
-                wordLength: 0,
-                formality: 0,
-                uniformity: 0,
+            let scores = {
+                copyPaste: 0,
+                typingSpeed: 0,
                 keystrokePattern: 0,
-                timeRatio: 0,
+                languagePattern: 0
             };
 
             let validAnswers = 0;
+            let totalWords = 0;
+            let totalCharacters = 0;
 
+            // Analyze each answer
             for (let i = 1; i <= 3; i++) {
                 const answer = examState.answers[`q${i}`];
-                if (!answer || answer.length < 10) continue;
-
-                const metrics = analyzeAnswerForAI(answer);
-                if (!metrics) continue;
+                if (!answer || answer.length < 15) continue;
 
                 validAnswers++;
+                const words = answer.trim().split(/\s+/).filter(w => w.length > 0);
+                const wordCount = words.length;
+                totalWords += wordCount;
+                totalCharacters += answer.length;
 
-                // Word Length Analysis (AI uses longer, more complex words)
-                if (metrics.avgWordLength > 5.8) details.wordLength += 60;
-                else if (metrics.avgWordLength > 5.3) details.wordLength += 40;
-                else if (metrics.avgWordLength > 4.8) details.wordLength += 20;
-
-                // Complex words ratio
-                const complexRatio = metrics.complexWords / metrics.wordCount;
-                if (complexRatio > 0.25) details.wordLength += 30;
-                else if (complexRatio > 0.15) details.wordLength += 15;
-
-                // Formality Analysis (AI tends to use formal language)
-                const formalityRatio = metrics.formalWords / metrics.wordCount;
-                if (formalityRatio > 0.08) details.formality += 70;
-                else if (formalityRatio > 0.05) details.formality += 45;
-                else if (formalityRatio > 0.03) details.formality += 25;
-
-                // Unique word ratio (AI sometimes has high vocabulary diversity)
-                if (metrics.uniqueWordRatio > 0.85) details.formality += 20;
-                else if (metrics.uniqueWordRatio > 0.75) details.formality += 10;
-
-                // Sentence Uniformity (AI produces very consistent sentence lengths)
-                if (metrics.sentenceLengthVariance < 2.5) details.uniformity += 70;
-                else if (metrics.sentenceLengthVariance < 4) details.uniformity += 45;
-                else if (metrics.sentenceLengthVariance < 6) details.uniformity += 25;
-
-                // Average sentence length (AI tends toward moderate, consistent length)
-                if (metrics.avgSentenceLength > 15 && metrics.avgSentenceLength < 25) {
-                    details.uniformity += 20;
-                }
-
-                // Punctuation patterns (AI uses more structured punctuation)
-                const punctuationRatio = (metrics.commaCount + metrics.colonCount) / metrics.sentenceCount;
-                if (punctuationRatio > 2) details.formality += 15;
-
-                // Time-to-answer ratio
                 const metric = examState.answerMetrics[`q${i}`];
-                if (metric && metric.timeSpent && metric.timeSpent > 0) {
-                    const wordsPerSecond = metrics.wordCount / metric.timeSpent;
+                
+                if (metric && metric.timeSpent > 0 && metric.keystrokeCount > 0) {
+                    // 1. COPY-PASTE DETECTION (Most Reliable)
+                    const keystrokesPerChar = metric.keystrokeCount / answer.length;
                     
-                    // Too fast suggests copy-paste
-                    if (wordsPerSecond > 3) details.timeRatio += 80;
-                    else if (wordsPerSecond > 2) details.timeRatio += 55;
-                    else if (wordsPerSecond > 1.2) details.timeRatio += 30;
+                    // Normal typing: ~1.0-1.3 keystrokes per character (including backspace, corrections)
+                    // Copy-paste: ~0.05-0.2 keystrokes per character
+                    if (keystrokesPerChar < 0.3 && wordCount > 20) {
+                        scores.copyPaste += 80;  // Very strong indicator of paste
+                    } else if (keystrokesPerChar < 0.5 && wordCount > 15) {
+                        scores.copyPaste += 50;
+                    } else if (keystrokesPerChar < 0.7 && wordCount > 10) {
+                        scores.copyPaste += 20;
+                    }
+
+                    // 2. TYPING SPEED DETECTION
+                    const wordsPerSecond = wordCount / metric.timeSpent;
+                    const charsPerSecond = answer.length / metric.timeSpent;
                     
-                    // Check keystroke efficiency
-                    if (metric.keystrokeCount > 0) {
-                        const keystrokesPerWord = metric.keystrokeCount / metrics.wordCount;
-                        // Normal typing is ~5-7 keystrokes per word, copy-paste is much lower
-                        if (keystrokesPerWord < 3) details.timeRatio += 40;
-                        else if (keystrokesPerWord < 4) details.timeRatio += 20;
+                    // Normal typing: 0.5-1.5 words/sec (30-90 WPM)
+                    // Fast typing: 1.5-2.5 words/sec (90-150 WPM)
+                    // Paste/AI: 3+ words/sec (180+ WPM) - physically impossible for sustained typing
+                    if (wordsPerSecond > 4) {
+                        scores.typingSpeed += 90;  // Definitely pasted
+                    } else if (wordsPerSecond > 2.5) {
+                        scores.typingSpeed += 60;  // Very suspicious
+                    } else if (wordsPerSecond > 2) {
+                        scores.typingSpeed += 25;  // Fast but possible
+                    }
+                    
+                    // Cross-check with character speed
+                    // Normal typing: 2-8 chars/sec
+                    // Paste: 20+ chars/sec
+                    if (charsPerSecond > 25) {
+                        scores.typingSpeed += 40;
+                    } else if (charsPerSecond > 15) {
+                        scores.typingSpeed += 20;
                     }
                 }
             }
 
-            if (validAnswers === 0) {
-                return { score: 0, details: details };
-            }
-
-            // Keystroke Pattern Analysis (across all answers)
-            if (examState.keystrokeTimestamps.length > 20) {
+            // 3. KEYSTROKE PATTERN ANALYSIS (Global)
+            if (examState.keystrokeTimestamps.length > 30 && totalWords > 30) {
                 const gaps = [];
                 for (let i = 1; i < examState.keystrokeTimestamps.length; i++) {
                     gaps.push(examState.keystrokeTimestamps[i] - examState.keystrokeTimestamps[i-1]);
                 }
                 
                 const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
-                const gapVariance = Math.sqrt(gaps.reduce((sum, g) => sum + Math.pow(g - avgGap, 2), 0) / gaps.length);
+                const variance = gaps.reduce((sum, g) => sum + Math.pow(g - avgGap, 2), 0) / gaps.length;
+                const stdDev = Math.sqrt(variance);
                 
-                // Very uniform keystroke timing suggests automation/paste
-                if (gapVariance < 15) details.keystrokePattern = 85;
-                else if (gapVariance < 30) details.keystrokePattern = 60;
-                else if (gapVariance < 50) details.keystrokePattern = 35;
-                
-                // Check for suspiciously fast typing bursts
-                const fastGaps = gaps.filter(g => g < 50).length;
-                const fastRatio = fastGaps / gaps.length;
-                if (fastRatio > 0.7) details.keystrokePattern += 30;
-                else if (fastRatio > 0.5) details.keystrokePattern += 15;
-            } else if (examState.keystrokeTimestamps.length < 10) {
-                // Very few keystrokes for the amount of text = likely copy-paste
-                let totalWords = 0;
-                for (let i = 1; i <= 3; i++) {
-                    const answer = examState.answers[`q${i}`];
-                    if (answer) {
-                        totalWords += answer.split(/\s+/).filter(w => w.length > 0).length;
-                    }
+                // Normal human typing has HIGH variance (100-300ms standard deviation)
+                // Paste/bot has LOW variance (<50ms)
+                if (stdDev < 30) {
+                    scores.keystrokePattern += 70;  // Bot-like or paste
+                } else if (stdDev < 60) {
+                    scores.keystrokePattern += 35;
+                } else if (stdDev < 100) {
+                    scores.keystrokePattern += 10;
                 }
-                if (totalWords > 50) details.keystrokePattern = 90;
-                else if (totalWords > 30) details.keystrokePattern = 60;
+                
+                // Check for impossible fast bursts (paste signature)
+                const fastGaps = gaps.filter(g => g < 30).length;  // < 30ms between keys
+                const fastRatio = fastGaps / gaps.length;
+                if (fastRatio > 0.6 && gaps.length > 50) {
+                    scores.keystrokePattern += 60;  // Too many impossibly fast keystrokes
+                } else if (fastRatio > 0.4) {
+                    scores.keystrokePattern += 30;
+                }
+            } else if (totalWords > 50 && examState.keystrokeTimestamps.length < 30) {
+                // Lots of text but very few keystrokes = paste
+                scores.keystrokePattern += 85;
             }
 
-            // Average across all answers
-            const avgDetails = {
-                wordLength: Math.min(details.wordLength / validAnswers, 100),
-                formality: Math.min(details.formality / validAnswers, 100),
-                uniformity: Math.min(details.uniformity / validAnswers, 100),
-                keystrokePattern: Math.min(details.keystrokePattern, 100),
-                timeRatio: Math.min(details.timeRatio / validAnswers, 100),
-            };
+            // 4. AI LANGUAGE PATTERN DETECTION (Less Reliable, Lower Weight)
+            let languageScore = 0;
+            let languageChecks = 0;
+            
+            for (let i = 1; i <= 3; i++) {
+                const answer = examState.answers[`q${i}`];
+                if (!answer || answer.length < 20) continue;
 
-            // Weighted scoring - keystroke and time patterns are most reliable
-            const totalScore = (
-                avgDetails.wordLength * 0.15 +
-                avgDetails.formality * 0.20 +
-                avgDetails.uniformity * 0.15 +
-                avgDetails.keystrokePattern * 0.30 +
-                avgDetails.timeRatio * 0.20
+                const words = answer.trim().split(/\s+/).filter(w => w.length > 0);
+                const sentences = answer.split(/[.!?]+/).filter(s => s.trim().length > 0);
+                
+                // AI formal words (but humans can use these too!)
+                const formalWords = [
+                    'furthermore', 'moreover', 'thus', 'thereby', 'consequently', 'therefore',
+                    'however', 'nevertheless', 'additionally', 'specifically', 'essentially',
+                    'particularly', 'significantly', 'notably', 'primarily', 'fundamentally',
+                    'comprehensive', 'facilitate', 'utilize', 'implement', 'demonstrate',
+                    'emphasize', 'illustrate', 'exemplify', 'encompass', 'inherent',
+                    'paradigm', 'leverage', 'optimal', 'robust', 'intrinsic', 'enables'
+                ];
+                
+                const formalCount = words.filter(w => 
+                    formalWords.includes(w.toLowerCase())
+                ).length;
+                const formalRatio = formalCount / words.length;
+                
+                // FIXED: Much higher threshold - many smart students use formal language
+                if (formalRatio > 0.15 && words.length > 40) {  // Was 0.08, now 0.15
+                    languageScore += 40;
+                } else if (formalRatio > 0.10) {  // Was 0.05, now 0.10
+                    languageScore += 15;
+                }
+                
+                // Check sentence length uniformity
+                if (sentences.length > 3) {
+                    const sentenceLengths = sentences.map(s => s.trim().split(/\s+/).length);
+                    const avgLen = sentenceLengths.reduce((a,b) => a+b) / sentenceLengths.length;
+                    const variance = sentenceLengths.reduce((sum, len) => 
+                        sum + Math.pow(len - avgLen, 2), 0) / sentenceLengths.length;
+                    const stdDev = Math.sqrt(variance);
+                    
+                    // FIXED: AI has LOW variance (<3), humans have HIGH variance (>5)
+                    if (stdDev < 2 && sentences.length > 5) {  // Very uniform
+                        languageScore += 30;
+                    } else if (stdDev < 3.5) {
+                        languageScore += 10;
+                    }
+                }
+                
+                // Average word length (AI tends to use longer words)
+                const avgWordLength = words.reduce((sum, w) => sum + w.length, 0) / words.length;
+                
+                // FIXED: Normal academic writing is 4-6 chars, AI is 6+
+                if (avgWordLength > 6.5 && words.length > 30) {  // Was 5.8, now 6.5
+                    languageScore += 25;
+                } else if (avgWordLength > 6) {
+                    languageScore += 10;
+                }
+                
+                languageChecks++;
+            }
+            
+            if (languageChecks > 0) {
+                scores.languagePattern = Math.min(languageScore / languageChecks, 100);
+            }
+
+            // WEIGHTED FINAL SCORE
+            // Copy-paste and typing speed are MOST reliable (70% weight)
+            // Keystroke patterns are reliable (20% weight)  
+            // Language patterns are LEAST reliable (10% weight) - many false positives
+            const finalScore = (
+                scores.copyPaste * 0.40 +
+                scores.typingSpeed * 0.30 +
+                scores.keystrokePattern * 0.20 +
+                scores.languagePattern * 0.10
             );
 
             return {
-                score: Math.min(totalScore, 100),
-                details: avgDetails,
+                score: Math.min(finalScore, 100),
+                details: scores
             };
         }
 
@@ -1105,7 +1108,6 @@
         }
 
         async function startExam() {
-            // Start exam immediately - webcam monitoring disabled
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('examScreen').style.display = 'block';
             const video = document.getElementById('webcamVideo');
@@ -1134,7 +1136,6 @@
                 });
             };
 
-            // Check if video is already loaded (metadata already available)
             if (video.readyState >= 2) {
                 console.log('Video already loaded, starting immediately');
                 video.onloadedmetadata();
@@ -1339,41 +1340,38 @@
             const overallScore = aiAnalysis.score;
 
             const getLevel = (score) => {
-                if (score < 25) return { level: 'Low', className: 'low' };
-                if (score < 50) return { level: 'Medium', className: 'medium' };
+                if (score < 30) return { level: 'Low', className: 'low' };
+                if (score < 60) return { level: 'Medium', className: 'medium' };
                 return { level: 'High', className: 'high' };
             };
 
-            const wordLengthLevel = getLevel(details.wordLength);
-            const formalityLevel = getLevel(details.formality);
-            const uniformityLevel = getLevel(details.uniformity);
+            const copyPasteLevel = getLevel(details.copyPaste);
+            const typingSpeedLevel = getLevel(details.typingSpeed);
             const keystrokeLevel = getLevel(details.keystrokePattern);
-            const timeRatioLevel = getLevel(details.timeRatio);
+            const languageLevel = getLevel(details.languagePattern);
             const overallLevel = getLevel(overallScore);
 
-            document.getElementById('aiWordLength').textContent = wordLengthLevel.level + ` (${Math.round(details.wordLength)}%)`;
-            document.getElementById('aiWordLength').className = `ai-indicator-value ${wordLengthLevel.className}`;
+            document.getElementById('aiCopyPaste').textContent = copyPasteLevel.level + ` (${Math.round(details.copyPaste)}%)`;
+            document.getElementById('aiCopyPaste').className = `ai-indicator-value ${copyPasteLevel.className}`;
 
-            document.getElementById('aiFormalityScore').textContent = formalityLevel.level + ` (${Math.round(details.formality)}%)`;
-            document.getElementById('aiFormalityScore').className = `ai-indicator-value ${formalityLevel.className}`;
-
-            document.getElementById('aiSentenceUniformity').textContent = uniformityLevel.level + ` (${Math.round(details.uniformity)}%)`;
-            document.getElementById('aiSentenceUniformity').className = `ai-indicator-value ${uniformityLevel.className}`;
+            document.getElementById('aiTypingSpeed').textContent = typingSpeedLevel.level + ` (${Math.round(details.typingSpeed)}%)`;
+            document.getElementById('aiTypingSpeed').className = `ai-indicator-value ${typingSpeedLevel.className}`;
 
             document.getElementById('aiKeystrokePattern').textContent = keystrokeLevel.level + ` (${Math.round(details.keystrokePattern)}%)`;
             document.getElementById('aiKeystrokePattern').className = `ai-indicator-value ${keystrokeLevel.className}`;
 
-            document.getElementById('aiTimeRatio').textContent = timeRatioLevel.level + ` (${Math.round(details.timeRatio)}%)`;
-            document.getElementById('aiTimeRatio').className = `ai-indicator-value ${timeRatioLevel.className}`;
+            document.getElementById('aiLanguagePattern').textContent = languageLevel.level + ` (${Math.round(details.languagePattern)}%)`;
+            document.getElementById('aiLanguagePattern').className = `ai-indicator-value ${languageLevel.className}`;
 
             document.getElementById('aiOverall').textContent = Math.round(overallScore) + '%';
             document.getElementById('aiOverall').className = `ai-indicator-value ${overallLevel.className}`;
 
-            if (overallScore > 50) {
+            // FIXED THRESHOLD: 65% instead of 50%
+            if (overallScore > 65) {
                 const violationMsg = document.getElementById('violationMsg');
-                violationMsg.textContent = `⚠️ MODERATE TO HIGH AI DETECTION (${Math.round(overallScore)}%) - Answer patterns suggest AI-generated content. This submission will be reviewed by the examination board.`;
+                violationMsg.textContent = `⚠️ HIGH AI/COPY-PASTE DETECTION (${Math.round(overallScore)}%) - Answer patterns suggest AI-generated or copy-pasted content. This submission will be reviewed by the examination board.`;
                 violationMsg.style.display = 'block';
-                violationMsg.style.color = overallScore > 70 ? '#d00' : '#ff6b00';
+                violationMsg.style.color = overallScore > 80 ? '#d00' : '#ff6b00';
             }
         }
 
@@ -1401,18 +1399,18 @@
             if (minutes < 10) minutes = '0' + minutes;
             document.getElementById('timeTaken').textContent = `${minutes}:${seconds}`;
 
-            // Check AI detection first
+            // Check AI detection
             const aiAnalysis = detectAI();
             
-            // Set submission status based on violations and AI detection
+            // Set submission status
             const submissionStatusEl = document.getElementById('submissionStatus');
             if (violation) {
                 submissionStatusEl.textContent = 'VIOLATION';
                 submissionStatusEl.classList.add('violation');
                 document.getElementById('violationMsg').textContent = '⚠️ Exam auto-submitted due to violation (exceeded allowed tab switches).';
                 document.getElementById('violationMsg').style.display = 'block';
-            } else if (aiAnalysis.score > 20) {
-                submissionStatusEl.textContent = 'POSSIBLE AI';
+            } else if (aiAnalysis.score > 65) {  // FIXED: 65% threshold instead of 20%
+                submissionStatusEl.textContent = 'FLAGGED';
                 submissionStatusEl.classList.add('violation');
             } else {
                 submissionStatusEl.textContent = 'SAFE';

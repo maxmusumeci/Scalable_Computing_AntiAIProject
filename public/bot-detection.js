@@ -82,6 +82,17 @@ class BotDetector {
         this.handleKeyUp = this.handleKeyUp.bind(this);
         this.handlePointerMove = this.handlePointerMove.bind(this);
         this.handlePointerDown = this.handlePointerDown.bind(this);
+
+        this.pointerData = {
+        sequences: [],           // Track pointer event sequences
+        lastPointerDown: null,
+        lastPointerMove: null,
+        moveBeforeDown: false,   // Did pointer move before down?
+        downWithoutHover: 0,     // Pointer downs without hover
+        perfectSteps: [],        // Track if movements are too perfect
+        pressureValues: [],      // Track all pressure values
+        timingDeltas: []         // Time between pointer events
+        };
     }
 
     start() {
@@ -259,23 +270,323 @@ class BotDetector {
         });
     }
 
+    // handlePointerMove(event) {
+    //     // Pointer events give us more info about input type
+    //     this.advancedData.pointerTypes.push(event.pointerType);
+        
+    //     // Check for pressure (real devices have varying pressure)
+    //     if (event.pressure !== undefined) {
+    //         // Synthetic events often have pressure of 0 or exactly 0.5
+    //         if (event.pressure === 0 || event.pressure === 0.5) {
+    //             this.advancedData.eventSourceTypes.push('synthetic_pressure');
+    //         } else {
+    //             this.advancedData.eventSourceTypes.push('real_pressure');
+    //         }
+    //     }
+    // }
+
+    // handlePointerDown(event) {
+    //     this.advancedData.pointerTypes.push(event.pointerType);
+    // }
+
     handlePointerMove(event) {
-        // Pointer events give us more info about input type
+        const now = Date.now();
+        
+        // CRITICAL: Track pointer event trust
+        this.advancedData.mouseEventTrust.push(event.isTrusted);
         this.advancedData.pointerTypes.push(event.pointerType);
         
-        // Check for pressure (real devices have varying pressure)
+        // Track if this is the first move (suspicious if no hover first)
+        if (!this.pointerData.lastPointerMove && !this.pointerData.lastPointerDown) {
+            this.pointerData.moveBeforeDown = true;
+        }
+        
+        // Store detailed pointer data
+        const position = {
+            x: event.clientX,
+            y: event.clientY,
+            time: now,
+            isTrusted: event.isTrusted,
+            pointerType: event.pointerType,
+            pressure: event.pressure,
+            tiltX: event.tiltX,
+            tiltY: event.tiltY,
+            twist: event.twist,
+            width: event.width,
+            height: event.height,
+            buttons: event.buttons,
+            isPrimary: event.isPrimary
+        };
+        
+        // CRITICAL: Track pressure values
         if (event.pressure !== undefined) {
-            // Synthetic events often have pressure of 0 or exactly 0.5
+            this.pointerData.pressureValues.push(event.pressure);
+            
             if (event.pressure === 0 || event.pressure === 0.5) {
                 this.advancedData.eventSourceTypes.push('synthetic_pressure');
             } else {
                 this.advancedData.eventSourceTypes.push('real_pressure');
             }
         }
+        
+        // Track timing between events
+        if (this.pointerData.lastPointerMove) {
+            const delta = now - this.pointerData.lastPointerMove.time;
+            this.pointerData.timingDeltas.push(delta);
+            
+            // Check for suspiciously regular timing (20ms, 30ms, 50ms intervals)
+            if (this.pointerData.timingDeltas.length > 10) {
+                const recent = this.pointerData.timingDeltas.slice(-10);
+                const variance = this.calculateVariance(recent);
+                if (variance < 5) {  // Very consistent timing
+                    this.advancedData.eventSourceTypes.push('regular_timing');
+                }
+            }
+        }
+        
+        // Do the same movement analysis as mouse events
+        if (this.mouseData.lastPosition) {
+            const last = this.mouseData.lastPosition;
+            const dx = position.x - last.x;
+            const dy = position.y - last.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const timeDelta = now - last.time;
+            
+            position.distance = distance;
+            position.speed = timeDelta > 0 ? distance / timeDelta : 0;
+            position.timeDelta = timeDelta;
+            position.angle = Math.atan2(dy, dx);
+            
+            // CRITICAL: Check if distance is too uniform (bot uses fixed steps)
+            if (distance > 0) {
+                this.pointerData.perfectSteps.push(distance);
+                
+                if (this.pointerData.perfectSteps.length > 15) {
+                    const recentSteps = this.pointerData.perfectSteps.slice(-15);
+                    const stepVariance = this.calculateVariance(recentSteps);
+                    const avgStep = recentSteps.reduce((a,b) => a+b) / recentSteps.length;
+                    
+                    // If steps are very uniform, it's a bot
+                    if (stepVariance < avgStep * 0.05 && avgStep > 5) {
+                        this.advancedData.eventSourceTypes.push('uniform_steps');
+                    }
+                }
+            }
+            
+            if (last.speed !== undefined) {
+                position.acceleration = timeDelta > 0 ? (position.speed - last.speed) / timeDelta : 0;
+                this.advancedData.accelerationChanges.push(position.acceleration);
+            }
+            
+            this.analyzeMovementPattern(position, last);
+            this.mouseData.totalDistance += distance;
+        }
+        
+        this.pointerData.lastPointerMove = position;
+        this.mouseData.movements.push(position);
+        this.mouseData.lastPosition = position;
+        this.interactionData.lastInteraction = now;
+        this.interactionData.totalEvents++;
+        this.interactionData.eventTimestamps.push(now);
+        
+        this.pruneOldData();
     }
 
     handlePointerDown(event) {
+        const now = Date.now();
+        
         this.advancedData.pointerTypes.push(event.pointerType);
+        this.advancedData.clickEventTrust.push(event.isTrusted);
+        
+        // CRITICAL: Check if pointer down happened without hover
+        // Real users hover before clicking
+        if (!this.pointerData.lastPointerMove) {
+            this.pointerData.downWithoutHover++;
+        }
+        
+        // Track pointer down with full details
+        this.pointerData.lastPointerDown = {
+            x: event.clientX,
+            y: event.clientY,
+            time: now,
+            pressure: event.pressure
+        };
+        
+        this.mouseData.clicks.push({
+            x: event.clientX,
+            y: event.clientY,
+            time: now,
+            isTrusted: event.isTrusted,
+            pointerType: event.pointerType,
+            pressure: event.pressure
+        });
+    }
+
+    // Add this new analysis method
+    analyzePointerBehavior() {
+        if (this.pointerData.timingDeltas.length < 10) {
+            return { score: 0, flags: [], insufficient: true };
+        }
+
+        const flags = [];
+        let score = 0;
+
+        // 1. Check for uniform step distances (CRITICAL for your bot)
+        const uniformSteps = this.advancedData.eventSourceTypes.filter(
+            t => t === 'uniform_steps'
+        ).length;
+        
+        if (uniformSteps > 5) {
+            score += 50;
+            flags.push('UNIFORM_POINTER_STEPS');
+        }
+
+        // 2. Check for regular timing (20ms intervals from your bot's asyncio.sleep(0.02))
+        const regularTiming = this.advancedData.eventSourceTypes.filter(
+            t => t === 'regular_timing'
+        ).length;
+        
+        if (regularTiming > 5) {
+            score += 45;
+            flags.push('REGULAR_POINTER_TIMING');
+        }
+
+        // 3. Check timing variance directly
+        if (this.pointerData.timingDeltas.length > 15) {
+            const variance = this.calculateVariance(this.pointerData.timingDeltas);
+            if (variance < 10) {  // Less than 10ms variance
+                score += 40;
+                flags.push('MACHINE_POINTER_TIMING');
+            }
+        }
+
+        // 4. Check for synthetic pressure
+        const syntheticPressure = this.advancedData.eventSourceTypes.filter(
+            t => t === 'synthetic_pressure'
+        ).length;
+        const totalPressureEvents = this.advancedData.eventSourceTypes.filter(
+            t => t === 'synthetic_pressure' || t === 'real_pressure'
+        ).length;
+        
+        if (totalPressureEvents > 10) {
+            const syntheticRatio = syntheticPressure / totalPressureEvents;
+            if (syntheticRatio > 0.8) {
+                score += 35;
+                flags.push('SYNTHETIC_POINTER_PRESSURE');
+            }
+        }
+
+        // 5. Check pressure variance (real hands have varying pressure)
+        if (this.pointerData.pressureValues.length > 20) {
+            const pressureVariance = this.calculateVariance(this.pointerData.pressureValues);
+            if (pressureVariance < 0.001) {  // Essentially constant
+                score += 35;
+                flags.push('CONSTANT_POINTER_PRESSURE');
+            }
+        }
+
+        // 6. Check if pointer down happened without prior movement
+        if (this.pointerData.downWithoutHover > 2) {
+            score += 25;
+            flags.push('POINTER_DOWN_WITHOUT_HOVER');
+        }
+
+        // 7. Check perfect step distances
+        if (this.pointerData.perfectSteps.length > 20) {
+            const stepVariance = this.calculateVariance(this.pointerData.perfectSteps);
+            const avgStep = this.pointerData.perfectSteps.reduce((a,b) => a+b) / this.pointerData.perfectSteps.length;
+            
+            if (stepVariance < avgStep * 0.1 && avgStep > 5) {
+                score += 40;
+                flags.push('PERFECT_STEP_DISTANCES');
+            }
+        }
+
+        // 8. Check for missing tilt/twist data (real stylus/touch has these)
+        const movementsWithTilt = this.mouseData.movements.filter(
+            m => m.tiltX !== undefined && m.tiltX !== 0
+        ).length;
+        
+        if (this.mouseData.movements.length > 30 && movementsWithTilt === 0) {
+            score += 15;
+            flags.push('NO_POINTER_TILT_DATA');
+        }
+
+        return { score: Math.min(score, 100), flags };
+    }
+
+    // Update analyzeAndReport to include pointer analysis
+    analyzeAndReport() {
+        const mouseAnalysis = this.analyzeMouseBehavior();
+        const clickAnalysis = this.analyzeClickBehavior();
+        const keyboardAnalysis = this.analyzeKeyboardBehavior();
+        const timingAnalysis = this.analyzeTimingBehavior();
+        const pointerAnalysis = this.analyzePointerBehavior(); // ADD THIS
+
+        // Update scores
+        this.scores.mouse = mouseAnalysis.score;
+        this.scores.behavior = clickAnalysis.score;
+        this.scores.keyboard = keyboardAnalysis.score;
+        this.scores.timing = timingAnalysis.score;
+        this.scores.pointer = pointerAnalysis.score; // ADD THIS
+
+        // Calculate weighted suspicion level
+        let totalWeight = 0;
+        let weightedScore = 0;
+
+        weightedScore += this.scores.environment * 0.30;
+        totalWeight += 0.30;
+
+        weightedScore += this.scores.advanced * 0.10;
+        totalWeight += 0.10;
+
+        if (!mouseAnalysis.insufficient) {
+            weightedScore += this.scores.mouse * 0.15;
+            totalWeight += 0.15;
+        }
+
+        if (!pointerAnalysis.insufficient) {  // ADD THIS
+            weightedScore += this.scores.pointer * 0.20;  // High weight!
+            totalWeight += 0.20;
+        }
+
+        if (!clickAnalysis.insufficient) {
+            weightedScore += this.scores.behavior * 0.15;
+            totalWeight += 0.15;
+        }
+
+        if (!keyboardAnalysis.insufficient) {
+            weightedScore += this.scores.keyboard * 0.05;
+            totalWeight += 0.05;
+        }
+
+        weightedScore += this.scores.timing * 0.05;
+        totalWeight += 0.05;
+
+        this.suspicionLevel = totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 0;
+
+        // Collect all flags
+        this.flags = [
+            ...new Set([
+                ...this.flags,
+                ...mouseAnalysis.flags,
+                ...clickAnalysis.flags,
+                ...keyboardAnalysis.flags,
+                ...timingAnalysis.flags,
+                ...pointerAnalysis.flags  // ADD THIS
+            ])
+        ];
+
+        const result = this.getReport();
+        this.log('Analysis complete:', result);
+
+        if (this.suspicionLevel >= this.config.suspicionThreshold) {
+            this.config.onSuspicion(result);
+        } else {
+            this.config.onClear(result);
+        }
+
+        return result;
     }
 
     // ==================== ADVANCED DETECTION ====================

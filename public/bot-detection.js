@@ -4,6 +4,295 @@
  * Even when they use stealth/evasion techniques
  */
 
+class VelocityProfileAnalyzer {
+    constructor() {
+        this.positions = [];
+        this.samplingRate = 16; // every 16 milliseconds
+        this.minSamplesForAnalysis = 20;
+    }
+
+    recordPosition(x, y, timestamp= Date.now()) {
+        this.positions.push({x, y, timestamp});
+
+        if (this.positions.length > 200) {
+            this.positions.shift();
+        }
+    }
+
+    calculateVelocity(pos1, pos2) {
+        const dx = pos2.x - pos1.x;
+        const dy = pos2.y - pos1.y;
+        const dt = (pos2.timestamp - pos1.timestamp) / 1000;
+
+        if (dt == 0) return {vx: 0, vy: 0, speed: 0};
+
+        const vx = dx / dt;
+        const vy = dy / dt;
+
+        const speed = Math.sqrt((vx * vx) + (vy * vy))
+
+        return {vx, vy, speed};
+    }
+
+    calculateAcceleration(v1, v2, dt) {
+        if (dt == 0) return 0;
+        const ax = (v2.vx - v1.vx) / dt;
+        const ay = (v2.vy - v1.vy) / dt;
+
+        return Math.sqrt((ax * ax) + (ay * ay));
+    }
+
+    velocityProfileAnalysis()  {
+        if (this.positions.length < this.minSamplesForAnalysis) {
+            return {
+                score: 0,
+                reason: 'Insufficient data',
+                flags: [],
+                insufficient: true
+            };
+        }
+
+        let flags = [];
+        let suspicionScore = 0;
+
+        const accelerations = [];
+        const velocities = [];
+
+        for (let i = 1; i < this.positions.length; ++i) {
+            const v = this.calculateVelocity(this.positions[i - 1], this.positions[i]);
+            velocities.push(v);
+            if (i > 1) { // off by 1 for acceleration
+                const dt = (this.positions[i].timestamp - this.positions[i - 1.].timestamp) / 1000;
+                const acc = this.calculateAcceleration(velocities[i - 2], velocities[i - 1], dt);
+                accelerations.push(acc)
+            }
+
+        }
+
+        // start with simple acc check
+        const maxHumanAcceleration = 10000; // conservative estimate of max mouse movement acc
+        const impossibleAcceleration = accelerations.filter(a => a > maxHumanAcceleration).length;
+
+        if (impossibleAcceleration > 0) {
+            suspicionScore += 40;
+            flags.push('IMPOSSIBLE_ACCELERATION');
+        }
+
+        const speeds = velocities.map(v => v.speed);
+        const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
+        // variance = sum over s(s_i - avgSpeed)^2/num_samples
+        const variance = speeds.reduce((sum, s) => sum + Math.pow(s - avgSpeed, 2));
+        const stdDev = Math.sqrt(variance);
+
+        if (avgSpeed > 50) { // 50 pixels
+            const coefficientOfVariation = stdDev / avgSpeed;
+            if (coefficientOfVariation < 0.05) {
+                suspicionScore += 30;
+                flags.push("NO_VELOCITY_JITTER")
+            }
+        }
+
+        let teleported = false;
+        const movements = [];
+
+        for (let i = 1; i < this.positions.length; ++i) {
+            const distance = Math.hypot(this.positions[i].x, this.positions[i - 1].x, 
+                this.positions[i].y, this.positions[i - 1].y
+            );
+            
+            const dt = (this.positions[i].timestamp - this.positions[i - 1].timestamp);
+            if (distance > 500 && dt < 0.05) {
+                teleported = true;
+            }
+
+            // we use this for fitt's law later
+            const v = velocities[i - 1];
+            if (distance > 50) {
+                movements.push({distance, speed: v.speed});
+            }
+        }
+        if (teleported) {
+            suspicionScore += 0.15;
+            flags.push("POSITION_TELEPORTED");
+        }
+
+        // main one: fitt's law violation
+        if (movements.length > 5) {
+            const distanceGroups = {
+                short: movements.filter(m => m.distance < 100),
+                medium: movements.filter(m => m.distance >= 100 && m.distance < 300),
+                long: movements.filter(m => m.distance >= 300)
+            };
+
+            const avgSpeed = {};
+            for (const [key, group] of Object.entries(distanceGroups)) {
+                if (group.length > 0) {
+                    avgSpeed[key] = group.reduce((sum, m) => sum + m.speed, 0) / group.length;
+                }
+            }
+
+            if (avgSpeeds.short && avgSpeeds.long) {
+                // if we're reaching speeds that are far in distance in similar speeds
+                //that we reach for small distance, then it violates fitt's law
+                const speedRatio = avgSpeeds.long / avgSpeeds.short;
+                if (speedRatio < 1.2) {
+                    suspicionScore += 20;
+                    flags.push("FITTS_LAW_VIOLATION");
+                }
+            }
+        }
+
+        suspicionScore = Math.min(100, suspicionScore);
+
+        return {
+            score: Math.round(suspicionScore),
+            insufficient: false,
+            flags: flags
+        };
+    }
+
+    reset() {
+        this.positions = [];
+    }
+}
+
+class DistanceAngleAnalyzer {
+    constructor() {
+        this.movements = [];
+        this.minMovementsForAnalysis = 15;
+    }
+
+    recordMovement(x1, x2, y1, y2) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+
+        const distance = Math.sqrt((dx * dx) + (dy * dy));
+
+        if (distance > 5) {
+            const angle = Math.atan2(dy, dx); // instead of atan which finds pi to -pi, we find -pi to pi
+            this.movements.push({distance, angle});
+
+            if (this.movements.length > 100) {
+                this.movements.shift();
+            }
+        }
+    }
+
+    analyzeAngularDistribution() {
+        if (this.movements.length < this.minMovementsForAnalysis) {
+            return {
+                score: 0, 
+                reason: "Insufficient data", 
+                flags: [], 
+                insufficient: true
+            };
+        }
+
+        const bins = new Array(8).fill(0);
+
+        for (const movement of this.movements) {
+            const normalizedAngle = (movement.angle + Math.PI) % (2 * Math.PI);
+            const binIndex = Math.floor(normalizedAngle / (Math.PI / 4)) % 8;
+            bins[binIndex]++;
+        }
+
+        const cardinalCount = bins[0] + bins[2] + bins[4] + bins[4];
+        const cardinalRatio = cardinalCount / this.movements.length;
+
+        let suspicionScore = 0;
+        let flags = [];
+
+        if (cardinalRatio < 0.45 || cardinalRatio > 0.85) {
+            suspicionScore += 30;
+            flags.push("UNNATURAL_ANGLE_DISTRIBUTION")
+        }
+
+        const expectedCount = this.movements.length / 8;
+        const chiSquare = bins.reduce((sum, count) => {
+            return sum + Math.pow(count - expectedCount, 2) / expectedCount;
+        }, 0);
+
+        if (chiSquare < 2) {
+            suspicionScore += 40;
+            flags("ANGLES_TOO_UNIFORM");
+        }
+
+        return {
+            score: suspicionScore,
+            //cardinalRatio,
+            //distribution: bins,
+            flags: flags,
+            insufficient: false
+        };
+    }
+
+    analyzeDistanceDistribution() {
+        if (this.movements.length < this.minMovementsForAnalysis) {
+            return { score: 0, reason: 'Insufficient data', flags: [] };
+        }
+
+        const distances = this.movements.map(m => m.distance);
+        const avgDistance = distances.reduce((a, b) => a + b, 0) / distances.length;
+        const variance = distances.reduce((sum, d) => sum + Math.pow(d - avgDistance, 2), 0) / distances.length;
+        const stdDev = Math.sqrt(variance);
+
+        let suspicionScore = 0;
+        let flags = [];
+
+        const coefficientOfVariation = stdDev / avgDistance;
+        if (coefficientOfVariation < 0.15) {
+            suspicionScore += 35;
+            flags.push('UNIFORM_MOVEMENT_DISTANCES');
+        }
+
+        const bins = { short: 0, medium: 0, long: 0 };
+        for (const d of distances) {
+            if (d < 50) bins.short++;
+            else if (d < 150) bins.medium++;
+            else bins.long++;
+        }
+
+        const shortRatio = bins.short / distances.length;
+        if (shortRatio < 0.3) {
+            suspicionScore += 25;
+            flags.push('TOO_FEW_SHORT_MOVEMENTS');
+        }
+
+        return {
+            score: suspicionScore,
+            avgDistance: Math.round(avgDistance),
+            coefficientOfVariation: Math.round(coefficientOfVariation * 100),
+            bins,
+            flags
+        };
+    }
+
+    analyzeDistanceAndAngle() {
+
+        const angleAnalysis = this.analyzeAngularDistribution();
+        const distanceAnalysis = this.analyzeDistanceDistribution();
+
+        const totalScore = Math.min(100, angleAnalysis.score + distanceAnalysis.score);
+        const allFlags = [...angleAnalysis.flags, ...distanceAnalysis.flags];
+
+        return {
+            score: Math.round(totalScore),
+            flags: allFlags,
+            insufficient: this.movements.length < this.minMovementsForAnalysis,
+            details: {
+                movementCount: this.movements.length,
+                cardinalRatio: Math.round(angleAnalysis.cardinalRatio * 100),
+                avgDistance: distanceAnalysis.avgDistance,
+                distanceVariation: distanceAnalysis.coefficientOfVariation
+            }
+        };
+    }
+
+    reset() {
+        this.movements = [];
+    }
+}
+
 class BotDetector {
     constructor(options = {}) {
         this.config = {
@@ -18,12 +307,15 @@ class BotDetector {
 
         // Data stores
         this.mouseData = {
-            movements: [],
+            movements: [], // array of x, y, timestamp?
             clicks: [],
             rawEvents: [], // Store raw event data for analysis
             lastPosition: null,
             totalDistance: 0
         };
+        
+        this.velocityAnalyzer = new VelocityProfileAnalyzer();
+        this.distanceAngleAnalyzer = new DistanceAngleAnalyzer();
 
         this.keyboardData = {
             keyDownTimes: {},
@@ -165,6 +457,8 @@ class BotDetector {
             screenY: event.screenY
         };
 
+        this.velocityAnalyzer.recordPosition(position.x, position.y, now);
+
         if (this.mouseData.lastPosition) {
             const last = this.mouseData.lastPosition;
             const dx = position.x - last.x;
@@ -182,6 +476,8 @@ class BotDetector {
                 position.acceleration = timeDelta > 0 ? (position.speed - last.speed) / timeDelta : 0;
                 this.advancedData.accelerationChanges.push(position.acceleration);
             }
+
+            this.distanceAngleAnalyzer.recordMovement(last.x, last.y, position.x, position.y);
 
             // Check for synthetic movement patterns
             this.analyzeMovementPattern(position, last);
@@ -523,12 +819,18 @@ class BotDetector {
         const timingAnalysis = this.analyzeTimingBehavior();
         const pointerAnalysis = this.analyzePointerBehavior(); // ADD THIS
 
+        const velocityAnalysis = this.velocityAnalyzer.velocityProfileAnalysis();
+        const distanceAngleAnalysis = this.distanceAngleAnalyzer.analyzeDistanceAndAngle();
+
         // Update scores
         this.scores.mouse = mouseAnalysis.score;
         this.scores.behavior = clickAnalysis.score;
         this.scores.keyboard = keyboardAnalysis.score;
         this.scores.timing = timingAnalysis.score;
         this.scores.pointer = pointerAnalysis.score; // ADD THIS
+
+        this.scores.velocity = velocityAnalyzer.score;
+        this.scores.distanceAngle = distanceAngleAnalyzer.score;
 
         // Calculate weighted suspicion level
         let totalWeight = 0;
@@ -548,6 +850,16 @@ class BotDetector {
         if (!pointerAnalysis.insufficient) {  // ADD THIS
             weightedScore += this.scores.pointer * 0.20;  // High weight!
             totalWeight += 0.20;
+        }
+
+        if (!velocityAnalysis.insufficient) {
+            weightedScore += this.scores.velocity * 0.20;
+            totalWeight += 0.20;
+        }
+
+        if (!distanceAngleAnalysis.insufficient) {
+            weightedScore += this.scores.distanceAngle * 0.12;
+            totalWeight += 0.12;
         }
 
         if (!clickAnalysis.insufficient) {
@@ -573,7 +885,9 @@ class BotDetector {
                 ...clickAnalysis.flags,
                 ...keyboardAnalysis.flags,
                 ...timingAnalysis.flags,
-                ...pointerAnalysis.flags  // ADD THIS
+                ...pointerAnalysis.flags,  // ADD THIS
+                ...velocityAnalysis.flags,
+                ...distanceAngleAnalysis.flags
             ])
         ];
 
@@ -591,32 +905,32 @@ class BotDetector {
 
     // ==================== ADVANCED DETECTION ====================
 
-    analyzeMovementPattern(current, last) {
-        // Detect perfectly linear movements (bots often move in exact lines)
-        if (this.mouseData.movements.length >= 3) {
-            const prev = this.mouseData.movements[this.mouseData.movements.length - 2];
+    // analyzeMovementPattern(current, last) {
+    //     // Detect perfectly linear movements (bots often move in exact lines)
+    //     if (this.mouseData.movements.length >= 3) {
+    //         const prev = this.mouseData.movements[this.mouseData.movements.length - 2];
             
-            // Calculate angle change
-            const angle1 = Math.atan2(last.y - prev.y, last.x - prev.x);
-            const angle2 = Math.atan2(current.y - last.y, current.x - last.x);
-            const angleDiff = Math.abs(angle1 - angle2);
+    //         // Calculate angle change
+    //         const angle1 = Math.atan2(last.y - prev.y, last.x - prev.x);
+    //         const angle2 = Math.atan2(current.y - last.y, current.x - last.x);
+    //         const angleDiff = Math.abs(angle1 - angle2);
             
-            this.advancedData.movementPatterns.push({
-                angleDiff,
-                isLinear: angleDiff < 0.05 || angleDiff > Math.PI * 2 - 0.05,
-                speed: current.speed,
-                timeDelta: current.timeDelta
-            });
-        }
+    //         this.advancedData.movementPatterns.push({
+    //             angleDiff,
+    //             isLinear: angleDiff < 0.05 || angleDiff > Math.PI * 2 - 0.05,
+    //             speed: current.speed,
+    //             timeDelta: current.timeDelta
+    //         });
+    //     }
 
-        // Analyze jitter (micro-movements from hand tremor)
-        if (current.distance < 5 && current.distance > 0) {
-            this.advancedData.jitterAnalysis.push({
-                distance: current.distance,
-                time: current.time
-            });
-        }
-    }
+    //     // Analyze jitter (micro-movements from hand tremor)
+    //     if (current.distance < 5 && current.distance > 0) {
+    //         this.advancedData.jitterAnalysis.push({
+    //             distance: current.distance,
+    //             time: current.time
+    //         });
+    //     }
+    // }
 
     injectDetectionTraps() {
         // Trap 1: Detect if someone is overriding navigator.webdriver

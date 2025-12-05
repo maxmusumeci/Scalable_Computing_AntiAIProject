@@ -383,6 +383,13 @@ class BotDetector {
         pressureValues: [],      // Track all pressure values
         timingDeltas: []         // Time between pointer events
         };
+
+        this.faceTrackingData = {
+            stillnessViolations: 0,
+            orientationViolations: 0,
+            consecutiveInvalidFrames: 0,
+            lastUpdate: null
+        };
     }
 
     start() {
@@ -564,23 +571,23 @@ class BotDetector {
         });
     }
 
-    // handlePointerMove(event) {
-    //     // Pointer events give us more info about input type
-    //     this.advancedData.pointerTypes.push(event.pointerType);
-        
-    //     // Check for pressure (real devices have varying pressure)
-    //     if (event.pressure !== undefined) {
-    //         // Synthetic events often have pressure of 0 or exactly 0.5
-    //         if (event.pressure === 0 || event.pressure === 0.5) {
-    //             this.advancedData.eventSourceTypes.push('synthetic_pressure');
-    //         } else {
-    //             this.advancedData.eventSourceTypes.push('real_pressure');
-    //         }
-    //     }
-    // }
 
     handlePointerDown(event) {
         this.advancedData.pointerTypes.push(event.pointerType);
+    }
+
+    updateFaceTracking(trackingData) {
+        if (!trackingData) return;
+
+        if (trackingData.stillness_suspicious) {
+            this.faceTrackingData.stillnessViolations++;
+        }
+
+        if (trackingData.orientation_suspicious) {
+            this.faceTrackingData.orientationViolations++;
+        }
+
+        this.faceTrackingData.consecutiveInvalidFrames = trackingData.consecutive_invalid_frames || 0;
     }
 
     handlePointerMove(event) {
@@ -809,6 +816,32 @@ class BotDetector {
         return { score: Math.min(score, 100), flags };
     }
 
+    analyzeFaceTracking() {
+        if (!this.faceTrackingData.lastUpdate) {
+            return {score: 0, flags: [], insufficient: true };
+        }
+
+        const flags = [];
+        let score = 0;
+
+        if (this.faceTrackingData.stillnessViolations > 2) {
+            score += 40;
+            flags.push('SUSPICIOUS_STILLNESS_DETECTED');
+        }
+
+        if (this.faceTrackingData.orientationViolations > 5) {
+            score += 35;
+            flags.push('EXCESSIVE_FACE_ORIENTATION_SWITCHING');
+        }
+
+        if (this.faceTrackingData.consecutiveInvalidFrames > 40) {
+            score += 45;
+            flags.push('PROLONGED_FACE_NOT_DETECTED');
+        }
+
+        return {score: Math.min(score, 100), flags};
+    }
+
     // Update analyzeAndReport to include pointer analysis
     analyzeAndReport() {
         const mouseAnalysis = this.analyzeMouseBehavior();
@@ -816,6 +849,7 @@ class BotDetector {
         const keyboardAnalysis = this.analyzeKeyboardBehavior();
         const timingAnalysis = this.analyzeTimingBehavior();
         const pointerAnalysis = this.analyzePointerBehavior(); // ADD THIS
+        const faceAnalysis = this.analyzeFaceTracking();
 
         const velocityAnalysis = this.velocityAnalyzer.velocityProfileAnalysis();
         const distanceAngleAnalysis = this.distanceAngleAnalyzer.analyzeDistanceAndAngle();
@@ -829,6 +863,7 @@ class BotDetector {
 
         this.scores.velocity = velocityAnalyzer.score;
         this.scores.distanceAngle = distanceAngleAnalyzer.score;
+        this.scores.faceTracking = faceAnalysis.score;
 
         // Calculate weighted suspicion level
         let totalWeight = 0;
@@ -870,6 +905,11 @@ class BotDetector {
             totalWeight += 0.05;
         }
 
+        if (!faceAnalysis.insufficient) {
+            weightedScore += this.scores.faceTracking * 0.25;
+            totalWeight += 0.25
+        }
+
         weightedScore += this.scores.timing * 0.05;
         totalWeight += 0.05;
 
@@ -885,7 +925,8 @@ class BotDetector {
                 ...timingAnalysis.flags,
                 ...pointerAnalysis.flags,  // ADD THIS
                 ...velocityAnalysis.flags,
-                ...distanceAngleAnalysis.flags
+                ...distanceAngleAnalysis.flags,
+                ...faceAnalysis.flags
             ])
         ];
 
@@ -1490,7 +1531,10 @@ class BotDetector {
                 clicks: this.mouseData.clicks.length,
                 keystrokes: this.keyboardData.keystrokePattern.length,
                 trustedEvents: this.advancedData.mouseEventTrust.filter(t => t).length,
-                untrustedEvents: this.advancedData.mouseEventTrust.filter(t => !t).length
+                untrustedEvents: this.advancedData.mouseEventTrust.filter(t => !t).length,
+                stillnessViolations: this.faceTrackingData.stillnessViolations,
+                orientationViolations: this.faceTrackingData.orientationViolations,
+                invalidFrames: this.faceTrackingData.consecutiveInvalidFrames
             },
             sessionDuration: Date.now() - this.interactionData.firstInteraction,
             timestamp: Date.now()

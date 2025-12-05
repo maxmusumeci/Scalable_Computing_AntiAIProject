@@ -196,7 +196,7 @@ class DistanceAngleAnalyzer {
             bins[binIndex]++;
         }
 
-        const cardinalCount = bins[0] + bins[2] + bins[4] + bins[4];
+        const cardinalCount = bins[0] + bins[2] + bins[4] + bins[6];
         const cardinalRatio = cardinalCount / this.movements.length;
 
         let suspicionScore = 0;
@@ -219,8 +219,6 @@ class DistanceAngleAnalyzer {
 
         return {
             score: suspicionScore,
-            //cardinalRatio,
-            //distribution: bins,
             flags: flags,
             insufficient: false
         };
@@ -906,7 +904,6 @@ class BotDetector {
     // ==================== ADVANCED DETECTION ====================
 
     analyzeMovementPattern(current, last) {
-        // Detect perfectly linear movements (bots often move in exact lines)
         if (this.mouseData.movements.length >= 3) {
             const prev = this.mouseData.movements[this.mouseData.movements.length - 2];
             

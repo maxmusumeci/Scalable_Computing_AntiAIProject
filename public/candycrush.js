@@ -1,3 +1,4 @@
+// Author : Yuxin Wan
 const SYMBOLS = [...'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), '🍭', '🍬', '🍫', '🍡', '🍩', '🍪'];
 const GRID_DIM = 3;
 const MIN_SOLUTION_MOVES = 3;

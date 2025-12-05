@@ -3,7 +3,7 @@
  * Specifically designed to catch Playwright, Selenium, and Puppeteer bots
  * Even when they use stealth/evasion techniques
  */
-
+// Author: Max Musumeci and Sriram Kirthivas
 class VelocityProfileAnalyzer {
     constructor() {
         this.positions = [];

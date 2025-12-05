@@ -1,3 +1,4 @@
+#Author - Max Musumeci
 from flask import Flask, send_file, jsonify, request
 from flask_cors import CORS
 import numpy as np

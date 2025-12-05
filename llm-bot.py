@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Authors - Yuxin and Liwei
 """
 Advanced CAPTCHA Bot Attacker - Playwright Async Implementation
 Intelligently solves all 3 CAPTCHA types: Candy Match, Maze, and Slider
